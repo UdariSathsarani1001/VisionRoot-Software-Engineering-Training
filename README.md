@@ -2,7 +2,7 @@
 
 Training project: **Service Request Management System**, a small internal web application where users can submit and track service requests.
 
-**Status:** Day 01 - Requirements and SDLC (documentation only, no application code yet)
+**Status:** Day 02 - Architecture and system design (documentation only, no application code yet)
 
 ---
 
@@ -35,6 +35,16 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 
 **Trello board:** https://trello.com/b/UcGn5JfV/service-request-management-system
 
+## Day 02 Progress
+
+| Item | Location |
+|---|---|
+| Architecture diagram, layers and request flow | `docs/architecture.md` |
+| Data model and ER diagram | `docs/data-model.md` |
+| API contract (5 endpoints, status codes, error format) | `docs/api-contract.md` |
+| Architecture decision (modular monolith) | `docs/decisions/ADR-001-architecture.md` |
+| Daily log | `evidence/Day-02/daily-log.md` |
+
 ## Repository Structure
 
 ```
@@ -42,11 +52,20 @@ VisionRoot-Software-Engineering-Training/
 ├── README.md
 ├── .gitignore
 ├── docs/
-│   └── requirements.md
+│   ├── requirements.md
+│   ├── architecture.md
+│   ├── data-model.md
+│   ├── api-contract.md
+│   └── decisions/
+│       └── ADR-001-architecture.md
 └── evidence/
-    └── Day-01/
-        ├── daily-log.md
-        └── backlog-board.png
+    ├── Day-01/
+    │   ├── daily-log.md
+    │   └── backlog-board.png
+    └── Day-02/
+        ├── data-model.png
+        ├── architecture.png
+        └── daily-log.md
 ```
 
 More folders (`frontend/`, `backend/`, `tests/`, `database/`) will be added on the days they are needed.
