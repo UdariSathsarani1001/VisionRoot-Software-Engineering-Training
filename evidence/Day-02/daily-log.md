@@ -28,8 +28,8 @@
 - `docs/api-contract.md`
 - `docs/decisions/ADR-001-architecture.md`
 - `evidence/Day-02/daily-log.md`
-- `evidence/data-model.png`
-- `evidence/architecture.png`
+- `evidence/Day-02/data-model.png`
+- `evidence/Day-02/architecture.png`
 - `README.md`
 
 ## How I tested it
@@ -67,7 +67,7 @@ I chose a single `requests` table with enums, and recorded the reason in `data-m
 
 ## What I would improve
 
-- Export the diagrams as images (`docs/architecture.png`, `docs/data-model.png`) so they are visible without rendering Mermaid.
+- Export the diagrams as images (`evidence/Day-02/architecture.png`, `evidence/Day-02/data-model.png`) so they are visible without rendering Mermaid.
 - Confirm with my supervisor that one table with enums is acceptable.
 - Confirm the error codes and the use of 400 for invalid status transitions before I implement the API on Day 05.
 
