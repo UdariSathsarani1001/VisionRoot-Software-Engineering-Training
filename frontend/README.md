@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Service Request Management — Frontend
 
-## Getting Started
+Next.js 16 · TypeScript · Tailwind CSS · shadcn/ui
 
-First, run the development server:
+## Routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Request list with status filter (US-02) |
+| `/requests/new` | Create-request form (US-01) |
+| `/requests/[id]` | Request details — read-only (US-03, stretch) |
+
+## Getting started
 
 ```bash
+cp .env.example .env.local   # already done; edit if needed
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Mock data
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> **All data is mocked.** The backend does not exist yet.
 
-## Learn More
+`NEXT_PUBLIC_USE_MOCK=true` (set in `.env.local`) activates the mock client in
+`src/lib/api.ts`. Data lives in `src/lib/mock-data.ts` and persists in memory
+for the lifetime of the browser session.
 
-To learn more about Next.js, take a look at the following resources:
+### Testing the error state
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Set `NEXT_PUBLIC_MOCK_ERROR=true` in `.env.local` to force every API call to
+fail and see the error UI.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Alternatively, submit a create-request form with a title that **starts with
+"error"** (case-insensitive) — only `createRequest` will throw.
 
-## Deploy on Vercel
+### Switching to the real API (Day 07)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Set `NEXT_PUBLIC_USE_MOCK=false` in `.env.local`.
+2. Set `NEXT_PUBLIC_API_URL` to the backend base URL.
+3. No component changes are needed.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+| Script | What it does |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier (write) |
+| `npm run format:check` | Prettier (check only) |
+| `npm test` | Placeholder — no tests yet |
+
+## Project structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx          # Shell and header
+│   ├── page.tsx            # List page
+│   ├── not-found.tsx       # 404
+│   └── requests/
+│       ├── new/page.tsx    # Create form
+│       └── [id]/page.tsx   # Details (stretch)
+├── components/
+│   ├── ui/                 # shadcn/ui primitives (hand-written equivalent)
+│   └── states/             # Loading, empty, error shared components
+├── features/requests/      # All request-domain logic and components
+└── lib/
+    ├── api.ts              # Single API client (mock now, real on Day 07)
+    ├── mock-data.ts        # Sample requests
+    └── utils.ts            # cn() helper
+```
