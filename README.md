@@ -2,7 +2,7 @@
 
 Training project: **Service Request Management System**, a small internal web application where users can submit and track service requests.
 
-**Status:** Day 03 - GitHub workflow and environment setup (project scaffolding only, no features yet)
+**Status:** Day 04 - Frontend architecture and UI (frontend uses mock data; backend not built yet)
 
 **Repository URL:** https://github.com/UdariSathsarani1001/VisionRoot-Software-Engineering-Training
 **Default branch:** `main`
@@ -23,7 +23,7 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 - Validate input on the server and return consistent errors
 - Health endpoint and setup documentation
 
-**Planned stack:** Next.js, Express.js, TypeScript, PostgreSQL
+**Planned stack:** Next.js, Express.js, TypeScript, PostgreSQL. The UI uses Tailwind CSS and shadcn/ui.
 
 ## Day 01 Progress
 
@@ -57,6 +57,22 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 | Environment variable examples (placeholders only) | `backend/.env.example`, `frontend/.env.example` |
 | Setup instructions | This README (see Setup Instructions) |
 | Daily log | `evidence/Day-03/daily-log.md` |
+
+## Day 04 Progress
+
+| Item | Location |
+|---|---|
+| Request list with status filter and loading / empty / error states | `frontend/src/features/requests/` |
+| Create-request form with client-side validation | `frontend/src/features/requests/` |
+| Request details page | `frontend/src/app/requests/[id]/` |
+| API client with mock data | `frontend/src/lib/api.ts` |
+| Shared state components (loading, empty, error) | `frontend/src/components/states/` |
+| shadcn/ui components | `frontend/src/components/ui/` |
+| Design decisions | `evidence/Day-04/notes.md` |
+| Screenshots | `evidence/Day-04/` |
+| Daily log | `evidence/Day-04/daily-log.md` |
+
+**Note:** the frontend uses mock data until it is connected to the backend on Day 07.
 
 ## Setup Instructions
 
@@ -103,6 +119,8 @@ npm run dev
 
 The frontend runs on http://localhost:3000.
 
+The backend has no endpoints yet, so the frontend runs on mock data from `src/lib/mock-data.ts`.
+
 | Variable | Meaning |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | Base URL of the backend API (default `http://localhost:4000/api`) |
@@ -141,6 +159,15 @@ VisionRoot-Software-Engineering-Training/
 │   └── tsconfig.json
 ├── frontend/
 │   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   │   ├── ui/
+│   │   │   └── states/
+│   │   ├── features/
+│   │   │   └── requests/
+│   │   └── lib/
+│   │       ├── api.ts
+│   │       └── mock-data.ts
 │   ├── .env.example
 │   └── package.json
 ├── docs/
@@ -158,8 +185,15 @@ VisionRoot-Software-Engineering-Training/
     │   ├── data-model.png
     │   ├── architecture.png
     │   └── daily-log.md
-    └── Day-03/
-        └── daily-log.md
+    ├── Day-03/
+    │   └── daily-log.md
+    └── Day-04/
+        ├── notes.md
+        ├── daily-log.md
+        ├── form-validation.png
+        ├── new_request_form.png
+        ├── request_details_page.png
+        └── request_page.png
 ```
 
 More folders (`tests/`, `database/`) will be added on the days they are needed.
@@ -167,11 +201,12 @@ More folders (`tests/`, `database/`) will be added on the days they are needed.
 ## Known Limitations
 
 - The MVP has no authentication or authorisation. All users can perform all actions.
+- The frontend uses mock data and is not connected to a backend yet. Real integration is planned for Day 07.
 - The project is for local/training use only and must not be deployed to a real production environment.
 
 ## Git Workflow
 
-- Work is done on feature branches (for example `chore/day-03-environment-setup`), not directly on `main`.
+- Work is done on feature branches (for example `feat/day-04-frontend-ui`), not directly on `main`.
 - Commits use clear messages, such as `chore: scaffold express typescript backend`.
 - Each branch is merged through a pull request.
 - No secrets, `.env` files or private data are committed. Only `.env.example` files with placeholders are committed.
