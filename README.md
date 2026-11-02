@@ -2,7 +2,7 @@
 
 Training project: **Service Request Management System**, a small internal web application where users can submit and track service requests.
 
-**Status:** Day 05 - Backend API and service layer (API uses in-memory storage; frontend still uses mock data)
+**Status:** Day 06 - Database and persistence (API stores data in PostgreSQL; frontend still uses mock data)
 
 **Repository URL:** https://github.com/UdariSathsarani1001/VisionRoot-Software-Engineering-Training
 **Default branch:** `main`
@@ -88,7 +88,23 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 | Controller, service and repository notes | `evidence/Day-05/notes.md` |
 | Daily log | `evidence/Day-05/daily-log.md` |
 
-**Note:** the API stores requests in memory, so data is lost when the server restarts. The database is added on Day 06.
+**Note:** on Day 05 the API stored requests in memory. This was replaced by PostgreSQL on Day 06.
+
+## Day 06 Progress
+
+| Item | Location |
+|---|---|
+| Migration creating the `requests` table, enums, constraints and index | `database/migrations/001_create_requests.sql` |
+| Migration runner (`npm run migrate`) | `backend/src/database/migrate.ts` |
+| Database connection pool | `backend/src/database/connection.ts` |
+| Repository using parameterised PostgreSQL queries | `backend/src/modules/requests/repository.ts` |
+| Health endpoint checks the database (200 or 503) | `GET /api/health` |
+| Updated data model and API contract | `docs/data-model.md`, `docs/api-contract.md` |
+| Schema, persistence and failure evidence | `evidence/Day-06/` |
+| Design decisions | `evidence/Day-06/notes.md` |
+| Daily log | `evidence/Day-06/daily-log.md` |
+
+**Note:** requests are now saved in PostgreSQL and survive a restart. The frontend is still not connected to the backend (Day 07).
 
 ## Setup Instructions
 
@@ -96,7 +112,7 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 
 - Git
 - Node.js and npm
-- PostgreSQL (needed from Day 06, when the database is added)
+- PostgreSQL (and pgAdmin 4, optional, to manage it)
 
 ### 1. Clone the repository
 
@@ -111,10 +127,12 @@ cd VisionRoot-Software-Engineering-Training
 cd backend
 npm install
 cp .env.example .env
+# set DATABASE_URL in .env (see "5. Database" below), then:
+npm run migrate
 npm run dev
 ```
 
-The backend runs on http://localhost:4000.
+The backend runs on http://localhost:4000. Set up the database first (see "5. Database"), otherwise the backend cannot save requests.
 
 **API endpoints**
 
@@ -123,13 +141,13 @@ The backend runs on http://localhost:4000.
 | POST | `/api/requests` | Create a request | 201 | 400 |
 | GET | `/api/requests` | List requests (optional `?status=`) | 200 | 400 |
 | GET | `/api/requests/{id}` | Get one request | 200 | 400, 404 |
-| GET | `/api/health` | Health check | 200 | |
+| GET | `/api/health` | Health check (includes the database) | 200 | 503 |
 
 `PATCH /api/requests/{id}/status` (change status) is planned for Day 07. Full request and response examples are in `docs/api-contract.md`.
 
 **Testing the API without the frontend**
 
-Import the Postman collection (`service-request-api.postman_collection.json`) into Postman and run the requests in order, or use curl:
+Import the Postman collection (`docs/postman/service-request-api.postman_collection.json`) into Postman and run the requests in order, or use curl:
 
 ```bash
 curl http://localhost:4000/api/health
@@ -139,13 +157,13 @@ curl -X POST http://localhost:4000/api/requests \
 curl http://localhost:4000/api/requests
 ```
 
-Requests are stored in memory in this version, so restarting the backend clears them.
+Requests are saved in PostgreSQL, so they are still there after restarting the backend.
 
 | Variable | Meaning |
 |---|---|
 | `PORT` | Port the backend listens on (default 4000) |
 | `NODE_ENV` | Environment name, such as `development` |
-| `DATABASE_URL` | PostgreSQL connection string (used from Day 06; replace the placeholders locally and never commit it) |
+| `DATABASE_URL` | PostgreSQL connection string. Set the real value only in your local `.env` and never commit it |
 
 ### 3. Frontend
 
@@ -160,7 +178,7 @@ npm run dev
 
 The frontend runs on http://localhost:3000.
 
-The backend has no endpoints yet, so the frontend runs on mock data from `src/lib/mock-data.ts`.
+The frontend is not connected to the backend yet, so it runs on mock data from `src/lib/mock-data.ts`. Connecting it is planned for Day 07.
 
 | Variable | Meaning |
 |---|---|
@@ -180,7 +198,39 @@ Run these inside `backend/` or `frontend/`:
 
 ### 5. Database
 
-Database setup and migrations will be documented on Day 06.
+PostgreSQL is required. The database is created once by hand, and everything inside it (types, table, index) is created by the migration. The names below are examples: use your own, and keep them consistent with `DATABASE_URL`.
+
+**1. Create a login role and a database.** In pgAdmin 4, use the Query Tool on your server and run (choose your own password):
+
+```sql
+CREATE ROLE srm_user WITH LOGIN PASSWORD 'CHOOSE_A_STRONG_PASSWORD';
+CREATE DATABASE service_requests OWNER srm_user;
+```
+
+Alternatively, create the role under Login/Group Roles and the database under Databases in the pgAdmin tree.
+
+**2. Set `DATABASE_URL`** in `backend/.env` (never commit this file). Use `backend/.env.example` as the template:
+
+```
+DATABASE_URL=postgresql://srm_user:YOUR_PASSWORD@localhost:5432/service_requests
+```
+
+If the password contains special characters such as `@`, `:`, `/`, `#` or `%`, URL-encode them.
+
+**3. Run the migrations:**
+
+```bash
+cd backend
+npm run migrate
+```
+
+This applies the SQL files in `database/migrations/` in order and records each one in a `schema_migrations` table. Running it again applies nothing.
+
+**4. Check the result** in pgAdmin (refresh, then open Schemas, public): the `requests` and `schema_migrations` tables, and the `request_category`, `request_priority` and `request_status` types.
+
+**Reset the database:** drop `service_requests`, create it again (step 1), then run `npm run migrate`.
+
+**Health check:** `GET /api/health` returns 200 when the database is reachable and 503 when it is not.
 
 ## Repository Structure
 
@@ -200,6 +250,9 @@ VisionRoot-Software-Engineering-Training/
 │   │   │       └── types.ts
 │   │   ├── middleware/
 │   │   │   └── error-handler.ts
+│   │   ├── database/
+│   │   │   ├── connection.ts
+│   │   │   └── migrate.ts
 │   │   ├── config/
 │   │   │   └── environment.ts
 │   │   ├── app.ts
@@ -221,13 +274,16 @@ VisionRoot-Software-Engineering-Training/
 │   │       └── mock-data.ts
 │   ├── .env.example
 │   └── package.json
+├── database/
+│   └── migrations/
+│       └── 001_create_requests.sql
 ├── docs/
 │   ├── requirements.md
 │   ├── architecture.md
 │   ├── data-model.md
 │   ├── api-contract.md
 │   ├── decisions/
-│   │   └── ADR-001-architecture.md‍
+│   │   └── ADR-001-architecture.md
 │   └── postman/
 │       └── service-request-api.postman_collection.json
 └── evidence/
@@ -247,31 +303,31 @@ VisionRoot-Software-Engineering-Training/
     │   ├── new_request_form.png
     │   ├── request_details_page.png
     │   └── request_page.png
-    └── Day-05/
+    ├── Day-05/
+    │   ├── notes.md
+    │   ├── daily-log.md
+    │   ├── create_request_empty_title.png
+    │   ├── create_request.png
+    │   ├── get_request_by_id.png
+    │   ├── get_request_not_found.png
+    │   └── list_requests.png
+    └── Day-06/
         ├── notes.md
-        ├── daily-log.md
-        ├── create_request_empty_title.png
-        ├── create_request.png
-        ├── get_request_by_id.png
-        ├── get_request_not_found.png
-        └── list_requests.png
+        └── daily-log.md
 ```
 
-
-More folders (`tests/`, `database/`) will be added on the days they are needed.
+More folders (`tests/`) will be added on the days they are needed.
 
 ## Known Limitations
 
 - The MVP has no authentication or authorisation. All users can perform all actions.
 - The frontend uses mock data and is not connected to the backend yet. Real integration is planned for Day 07.
-- The API stores requests in memory, so data is lost on restart. Persistence is added on Day 06.
-- `GET /api/health` returns 200 without checking a database yet. The database check is added on Day 06.
 - Status updates (`PATCH /api/requests/{id}/status`) are not implemented yet and are planned for Day 07.
 - The project is for local/training use only and must not be deployed to a real production environment.
 
 ## Git Workflow
 
-- Work is done on feature branches (for example `feat/day-05-backend-api`), not directly on `main`.
+- Work is done on feature branches (for example `feat/day-06-database`), not directly on `main`.
 - Commits use clear messages, such as `chore: scaffold express typescript backend`.
 - Each branch is merged through a pull request.
 - No secrets, `.env` files or private data are committed. Only `.env.example` files with placeholders are committed.
