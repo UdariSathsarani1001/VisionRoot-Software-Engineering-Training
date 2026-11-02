@@ -7,6 +7,9 @@
 - **Base path:** `/api`
 - **Format:** JSON for all requests and responses
 - **Authentication:** none in the MVP (see Assumptions and Limitations in `requirements.md`)
+- **Storage:** requests are held in memory and are lost on server restart. PostgreSQL persistence is added on Day 06.
+- **Unknown request body fields:** rejected with `400 VALIDATION_ERROR` (the schema uses strict mode).
+- **Sort order:** `GET /api/requests` returns results newest first.
 
 ## 2. Endpoints
 
@@ -184,7 +187,7 @@ If no requests match, the response is `200 OK` with an empty list: `[]`. The fro
 
 `GET /api/health`
 
-**Success: 200 OK** (the API is running and the database is reachable)
+**Success: 200 OK** (the API is running)
 
 ```json
 {
@@ -192,7 +195,9 @@ If no requests match, the response is `200 OK` with an empty list: `[]`. The fro
 }
 ```
 
-**Error: 503 Service Unavailable** (the database cannot be reached)
+> **Note (Day 05):** the health endpoint returns 200 without a database check. The 503 case is added on Day 06 when PostgreSQL is connected.
+
+**Error: 503 Service Unavailable** (the database cannot be reached — added Day 06)
 
 ```json
 {

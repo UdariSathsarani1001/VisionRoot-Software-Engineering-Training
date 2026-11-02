@@ -2,7 +2,7 @@
 
 Training project: **Service Request Management System**, a small internal web application where users can submit and track service requests.
 
-**Status:** Day 04 - Frontend architecture and UI (frontend uses mock data; backend not built yet)
+**Status:** Day 05 - Backend API and service layer (API uses in-memory storage; frontend still uses mock data)
 
 **Repository URL:** https://github.com/UdariSathsarani1001/VisionRoot-Software-Engineering-Training
 **Default branch:** `main`
@@ -74,12 +74,28 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 
 **Note:** the frontend uses mock data until it is connected to the backend on Day 07.
 
+## Day 05 Progress
+
+| Item | Location |
+|---|---|
+| Create, list and get-by-id endpoints | `backend/src/modules/requests/` |
+| Server-side validation schemas | `backend/src/modules/requests/schema.ts` |
+| Business rules (service) and in-memory data access (repository) | `backend/src/modules/requests/service.ts`, `repository.ts` |
+| Health endpoint | `GET /api/health` |
+| Centralised error handling | `backend/src/middleware/error-handler.ts` |
+| Updated API contract with real behaviour | `docs/api-contract.md` |
+| Postman collection and request/response evidence | `evidence/Day-05/` |
+| Controller, service and repository notes | `evidence/Day-05/notes.md` |
+| Daily log | `evidence/Day-05/daily-log.md` |
+
+**Note:** the API stores requests in memory, so data is lost when the server restarts. The database is added on Day 06.
+
 ## Setup Instructions
 
 ### Prerequisites
 
 - Git
-- Node.js and npm (use a current supported version: <!-- add the version you used, from `node -v` -->)
+- Node.js and npm
 - PostgreSQL (needed from Day 06, when the database is added)
 
 ### 1. Clone the repository
@@ -98,7 +114,32 @@ cp .env.example .env
 npm run dev
 ```
 
-The backend runs on http://localhost:4000. It has no routes yet, so opening it in a browser shows "Cannot GET /".
+The backend runs on http://localhost:4000.
+
+**API endpoints**
+
+| Method | Path | Purpose | Success | Errors |
+|---|---|---|---|---|
+| POST | `/api/requests` | Create a request | 201 | 400 |
+| GET | `/api/requests` | List requests (optional `?status=`) | 200 | 400 |
+| GET | `/api/requests/{id}` | Get one request | 200 | 400, 404 |
+| GET | `/api/health` | Health check | 200 | |
+
+`PATCH /api/requests/{id}/status` (change status) is planned for Day 07. Full request and response examples are in `docs/api-contract.md`.
+
+**Testing the API without the frontend**
+
+Import the Postman collection (`service-request-api.postman_collection.json`) into Postman and run the requests in order, or use curl:
+
+```bash
+curl http://localhost:4000/api/health
+curl -X POST http://localhost:4000/api/requests \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Laptop will not start","description":"Black screen on power on.","category":"IT","priority":"HIGH"}'
+curl http://localhost:4000/api/requests
+```
+
+Requests are stored in memory in this version, so restarting the backend clears them.
 
 | Variable | Meaning |
 |---|---|
@@ -149,6 +190,16 @@ VisionRoot-Software-Engineering-Training/
 ├── .gitignore
 ├── backend/
 │   ├── src/
+│   │   ├── modules/
+│   │   │   └── requests/
+│   │   │       ├── routes.ts
+│   │   │       ├── controller.ts
+│   │   │       ├── service.ts
+│   │   │       ├── repository.ts
+│   │   │       ├── schema.ts
+│   │   │       └── types.ts
+│   │   ├── middleware/
+│   │   │   └── error-handler.ts
 │   │   ├── config/
 │   │   │   └── environment.ts
 │   │   ├── app.ts
@@ -175,8 +226,10 @@ VisionRoot-Software-Engineering-Training/
 │   ├── architecture.md
 │   ├── data-model.md
 │   ├── api-contract.md
-│   └── decisions/
-│       └── ADR-001-architecture.md
+│   ├── decisions/
+│   │   └── ADR-001-architecture.md‍
+│   └── postman/
+│       └── service-request-api.postman_collection.json
 └── evidence/
     ├── Day-01/
     │   ├── daily-log.md
@@ -187,26 +240,38 @@ VisionRoot-Software-Engineering-Training/
     │   └── daily-log.md
     ├── Day-03/
     │   └── daily-log.md
-    └── Day-04/
+    ├── Day-04/
+    │   ├── notes.md
+    │   ├── daily-log.md
+    │   ├── form-validation.png
+    │   ├── new_request_form.png
+    │   ├── request_details_page.png
+    │   └── request_page.png
+    └── Day-05/
         ├── notes.md
         ├── daily-log.md
-        ├── form-validation.png
-        ├── new_request_form.png
-        ├── request_details_page.png
-        └── request_page.png
+        ├── create_request_empty_title.png
+        ├── create_request.png
+        ├── get_request_by_id.png
+        ├── get_request_not_found.png
+        └── list_requests.png
 ```
+
 
 More folders (`tests/`, `database/`) will be added on the days they are needed.
 
 ## Known Limitations
 
 - The MVP has no authentication or authorisation. All users can perform all actions.
-- The frontend uses mock data and is not connected to a backend yet. Real integration is planned for Day 07.
+- The frontend uses mock data and is not connected to the backend yet. Real integration is planned for Day 07.
+- The API stores requests in memory, so data is lost on restart. Persistence is added on Day 06.
+- `GET /api/health` returns 200 without checking a database yet. The database check is added on Day 06.
+- Status updates (`PATCH /api/requests/{id}/status`) are not implemented yet and are planned for Day 07.
 - The project is for local/training use only and must not be deployed to a real production environment.
 
 ## Git Workflow
 
-- Work is done on feature branches (for example `feat/day-04-frontend-ui`), not directly on `main`.
+- Work is done on feature branches (for example `feat/day-05-backend-api`), not directly on `main`.
 - Commits use clear messages, such as `chore: scaffold express typescript backend`.
 - Each branch is merged through a pull request.
 - No secrets, `.env` files or private data are committed. Only `.env.example` files with placeholders are committed.
