@@ -7,7 +7,7 @@
 - **Base path:** `/api`
 - **Format:** JSON for all requests and responses
 - **Authentication:** none in the MVP (see Assumptions and Limitations in `requirements.md`)
-- **Storage:** requests are held in memory and are lost on server restart. PostgreSQL persistence is added on Day 06.
+- **Storage:** requests are persisted in PostgreSQL. Requests survive server restarts.
 - **Unknown request body fields:** rejected with `400 VALIDATION_ERROR` (the schema uses strict mode).
 - **Sort order:** `GET /api/requests` returns results newest first.
 
@@ -187,7 +187,7 @@ If no requests match, the response is `200 OK` with an empty list: `[]`. The fro
 
 `GET /api/health`
 
-**Success: 200 OK** (the API is running)
+**Success: 200 OK** (the API is running and the database is reachable)
 
 ```json
 {
@@ -195,9 +195,7 @@ If no requests match, the response is `200 OK` with an empty list: `[]`. The fro
 }
 ```
 
-> **Note (Day 05):** the health endpoint returns 200 without a database check. The 503 case is added on Day 06 when PostgreSQL is connected.
-
-**Error: 503 Service Unavailable** (the database cannot be reached — added Day 06)
+**Error: 503 Service Unavailable** (the database cannot be reached)
 
 ```json
 {
@@ -224,7 +222,7 @@ Every error uses the same structure:
 | 400 | `VALIDATION_ERROR` | Missing or invalid input |
 | 400 | `INVALID_TRANSITION` | Status change not allowed |
 | 404 | `NOT_FOUND` | Request id does not exist |
-| 500 | `INTERNAL_ERROR` | Unexpected server error |
+| 500 | `INTERNAL_ERROR` | Unexpected server error (e.g. database unreachable during a request) |
 
 `details` is optional and only used for field-level validation errors. Error responses never include stack traces, credentials or private data.
 
