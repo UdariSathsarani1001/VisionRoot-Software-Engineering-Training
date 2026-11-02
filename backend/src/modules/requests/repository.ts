@@ -1,40 +1,58 @@
+import { pool } from '../../database/connection';
 import { CreateRequestInput, ServiceRequest, Status } from './types';
 
-// In-memory store. Data is lost on server restart. Persistence arrives on Day 06.
-const store: ServiceRequest[] = [];
-let nextId = 1;
-
-function nowIso(): string {
-  return new Date().toISOString();
-}
-
-export function create(input: CreateRequestInput): ServiceRequest {
-  const now = nowIso();
-  const request: ServiceRequest = {
-    id: nextId++,
-    title: input.title,
-    description: input.description,
-    category: input.category,
-    priority: input.priority,
-    status: 'OPEN',
-    created_at: now,
-    updated_at: now,
+// Map a raw database row to the ServiceRequest shape.
+// The pg driver returns timestamptz as a Date object; convert to ISO 8601.
+function rowToRequest(row: Record<string, unknown>): ServiceRequest {
+  return {
+    id: row.id as number,
+    title: row.title as string,
+    description: row.description as string,
+    category: row.category as ServiceRequest['category'],
+    priority: row.priority as ServiceRequest['priority'],
+    status: row.status as ServiceRequest['status'],
+    created_at: (row.created_at as Date).toISOString(),
+    updated_at: (row.updated_at as Date).toISOString(),
   };
-  store.push(request);
-  return request;
 }
 
-export function findAll(status?: Status): ServiceRequest[] {
-  const results = status
-    ? store.filter((r) => r.status === status)
-    : [...store];
-  // Newest first.
-  return results.sort(
-    (a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+export async function create(
+  input: CreateRequestInput,
+): Promise<ServiceRequest> {
+  const result = await pool.query<Record<string, unknown>>(
+    `INSERT INTO requests (title, description, category, priority)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [input.title, input.description, input.category, input.priority],
   );
+  return rowToRequest(result.rows[0]);
 }
 
-export function findById(id: number): ServiceRequest | undefined {
-  return store.find((r) => r.id === id);
+export async function findAll(status?: Status): Promise<ServiceRequest[]> {
+  if (status) {
+    const result = await pool.query<Record<string, unknown>>(
+      `SELECT * FROM requests
+       WHERE status = $1
+       ORDER BY created_at DESC, id DESC`,
+      [status],
+    );
+    return result.rows.map(rowToRequest);
+  }
+
+  const result = await pool.query<Record<string, unknown>>(
+    `SELECT * FROM requests
+     ORDER BY created_at DESC, id DESC`,
+  );
+  return result.rows.map(rowToRequest);
+}
+
+export async function findById(id: number): Promise<ServiceRequest | null> {
+  const result = await pool.query<Record<string, unknown>>(
+    `SELECT * FROM requests WHERE id = $1`,
+    [id],
+  );
+  if (result.rows.length === 0) {
+    return null;
+  }
+  return rowToRequest(result.rows[0]);
 }

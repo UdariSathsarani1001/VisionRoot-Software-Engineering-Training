@@ -23,7 +23,7 @@ export async function createRequest(
       throw new AppError(400, 'VALIDATION_ERROR', 'Invalid input', details);
     }
 
-    const request = service.createRequest(parsed.data);
+    const request = await service.createRequest(parsed.data);
     res.status(201).json(request);
   } catch (err) {
     next(err);
@@ -41,7 +41,7 @@ export async function listRequests(
       throw new AppError(400, 'VALIDATION_ERROR', 'Invalid status filter');
     }
 
-    const requests = service.listRequests(
+    const requests = await service.listRequests(
       parsed.data.status as Status | undefined,
     );
     res.status(200).json(requests);
@@ -65,7 +65,7 @@ export async function getRequest(
       );
     }
 
-    const request = service.getRequest(parsed.data.id);
+    const request = await service.getRequest(parsed.data.id);
     res.status(200).json(request);
   } catch (err) {
     next(err);
