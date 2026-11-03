@@ -39,4 +39,5 @@ const router = (0, express_1.Router)();
 router.post('/', controller.createRequest);
 router.get('/', controller.listRequests);
 router.get('/:id', controller.getRequest);
+router.patch('/:id/status', controller.updateRequestStatus);
 exports.default = router;
