@@ -10,6 +10,7 @@
 - **Storage:** requests are persisted in PostgreSQL. Requests survive server restarts.
 - **Unknown request body fields:** rejected with `400 VALIDATION_ERROR` (the schema uses strict mode).
 - **Sort order:** `GET /api/requests` returns results newest first.
+- **CORS:** the backend allows cross-origin requests from the origin configured in `CORS_ORIGIN` (default `http://localhost:3000`). Methods `GET`, `POST`, `PATCH` and `OPTIONS` are permitted. Wildcards are not used.
 
 ## 2. Endpoints
 
@@ -168,6 +169,8 @@ If no requests match, the response is `200 OK` with an empty list: `[]`. The fro
 | `IN_PROGRESS` | `RESOLVED` |
 | `RESOLVED` | `CLOSED` |
 
+`CLOSED` is final — no further transitions are allowed. Same-status updates (e.g. `OPEN` to `OPEN`) are rejected as `INVALID_TRANSITION` because they are not in the allowed list.
+
 **Success: 200 OK:** returns the updated request with a new `updated_at`.
 
 **Error: 400 Bad Request** (invalid transition, for example `OPEN` to `CLOSED`)
@@ -181,7 +184,23 @@ If no requests match, the response is `200 OK` with an empty list: `[]`. The fro
 }
 ```
 
+**Error: 400 Bad Request** (unrecognised status value, for example `"DONE"`)
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input",
+    "details": [
+      { "field": "status", "message": "status must be one of: OPEN, IN_PROGRESS, RESOLVED, CLOSED" }
+    ]
+  }
+}
+```
+
 **Error: 404 Not Found:** same format as section 6.
+
+**Concurrency:** The UPDATE query checks the current status atomically (`WHERE id = $1 AND status = $3`), so two simultaneous requests cannot skip a transition step.
 
 ## 8. Health check
 
