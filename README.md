@@ -2,7 +2,7 @@
 
 Training project: **Service Request Management System**, a small internal web application where users can submit and track service requests.
 
-**Status:** Day 06 - Database and persistence (API stores data in PostgreSQL; frontend still uses mock data)
+**Status:** Day 07 - Full integration (frontend connected to live API; status-update workflow implemented)
 
 **Repository URL:** https://github.com/UdariSathsarani1001/VisionRoot-Software-Engineering-Training
 **Default branch:** `main`
@@ -104,7 +104,26 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 | Design decisions | `evidence/Day-06/notes.md` |
 | Daily log | `evidence/Day-06/daily-log.md` |
 
-**Note:** requests are now saved in PostgreSQL and survive a restart. The frontend is still not connected to the backend (Day 07).
+**Note:** requests are now saved in PostgreSQL and survive a restart. The frontend was connected to the backend on Day 07.
+
+## Day 07 Progress
+
+| Item | Location |
+|---|---|
+| `PATCH /api/requests/{id}/status` with transition rules | `backend/src/modules/requests/` |
+| Atomic concurrent-update guard in repository | `backend/src/modules/requests/repository.ts` |
+| CORS middleware (reads `CORS_ORIGIN` from env) | `backend/src/app.ts`, `backend/src/config/environment.ts` |
+| Real `fetch` calls in `api.ts` (`listRequests`, `getRequest`, `createRequest`, `updateRequestStatus`) | `frontend/src/lib/api.ts` |
+| `useRequestStatus` hook | `frontend/src/features/requests/use-requests.ts` |
+| Status-actions component (next-step button, error display) | `frontend/src/features/requests/status-actions.tsx` |
+| Details page wired to status control | `frontend/src/features/requests/request-details.tsx` |
+| Server field errors mapped to inline form fields | `frontend/src/features/requests/request-form.tsx` |
+| `NEXT_STATUS` convenience map | `frontend/src/features/requests/constants.ts` |
+| Workflow test script (10 steps, all transition rules) | `evidence/Day-07/workflow-test.mjs` |
+| Day 07 screenshots | [create-form.png](evidence/Day-07/create-form.png), [service-list.png](evidence/Day-07/service-list.png), [details-open.png](evidence/Day-07/details-open.png), [status-in-progress.png](evidence/Day-07/status-in-progress.png), [status-resolved.png](evidence/Day-07/status-resolved.png), [status-closed.png](evidence/Day-07/status-closed.png), [workflow-script-output.png](evidence/Day-07/workflow-script-output.png), [postman-runner.png](evidence/Day-07/postman-runner.png) |
+| Full Postman collection with PATCH test cases | `docs/postman/service-request-api.postman_collection.json` |
+| Design decisions and integration bug record | `evidence/Day-07/notes.md` |
+| Daily log | `evidence/Day-07/daily-log.md` |
 
 ## Setup Instructions
 
@@ -141,9 +160,10 @@ The backend runs on http://localhost:4000. Set up the database first (see "5. Da
 | POST | `/api/requests` | Create a request | 201 | 400 |
 | GET | `/api/requests` | List requests (optional `?status=`) | 200 | 400 |
 | GET | `/api/requests/{id}` | Get one request | 200 | 400, 404 |
+| PATCH | `/api/requests/{id}/status` | Update status | 200 | 400, 404 |
 | GET | `/api/health` | Health check (includes the database) | 200 | 503 |
 
-`PATCH /api/requests/{id}/status` (change status) is planned for Day 07. Full request and response examples are in `docs/api-contract.md`.
+Full request and response examples are in `docs/api-contract.md`.
 
 **Testing the API without the frontend**
 
@@ -164,6 +184,7 @@ Requests are saved in PostgreSQL, so they are still there after restarting the b
 | `PORT` | Port the backend listens on (default 4000) |
 | `NODE_ENV` | Environment name, such as `development` |
 | `DATABASE_URL` | PostgreSQL connection string. Set the real value only in your local `.env` and never commit it |
+| `CORS_ORIGIN` | Origin the browser frontend is served from (default `http://localhost:3000`). Must match the frontend URL exactly, including scheme and port |
 
 ### 3. Frontend
 
@@ -176,13 +197,16 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The frontend runs on http://localhost:3000.
+The frontend runs on http://localhost:3000. **Start the backend first** — the frontend calls the live API and will show an error state if the backend is not running.
 
-The frontend is not connected to the backend yet, so it runs on mock data from `src/lib/mock-data.ts`. Connecting it is planned for Day 07.
+> **Running both apps together:** open two terminals — one in `backend/` running `npm run dev` and one in `frontend/` running `npm run dev`.
+
+> **Mock mode:** if you need to run the frontend without the backend (for UI-only work), set `NEXT_PUBLIC_USE_MOCK=true` in `frontend/.env.local` and restart the Next.js dev server. The mock keeps data in memory for the session only.
 
 | Variable | Meaning |
 |---|---|
-| `NEXT_PUBLIC_API_URL` | Base URL of the backend API (default `http://localhost:4000/api`) |
+| `NEXT_PUBLIC_API_URL` | Base URL of the backend API (default `http://localhost:4000/api`). Must end in `/api` |
+| `NEXT_PUBLIC_USE_MOCK` | Set to `true` to use the in-memory mock instead of the real API (default `false`) |
 
 ### 4. Useful commands
 
@@ -311,9 +335,21 @@ VisionRoot-Software-Engineering-Training/
     │   ├── get_request_by_id.png
     │   ├── get_request_not_found.png
     │   └── list_requests.png
-    └── Day-06/
+    ├── Day-06/
+    │   ├── notes.md
+    │   └── daily-log.md
+    └── Day-07/
         ├── notes.md
-        └── daily-log.md
+        ├── daily-log.md
+        ├── create-form.png
+        ├── service-list.png
+        ├── details-open.png
+        ├── status-in-progress.png
+        ├── status-resolved.png
+        ├── status-closed.png
+        ├── workflow-script-output.png
+        ├── postman-runner.png
+        └── workflow-test.mjs
 ```
 
 More folders (`tests/`) will be added on the days they are needed.
@@ -321,9 +357,9 @@ More folders (`tests/`) will be added on the days they are needed.
 ## Known Limitations
 
 - The MVP has no authentication or authorisation. All users can perform all actions.
-- The frontend uses mock data and is not connected to the backend yet. Real integration is planned for Day 07.
-- Status updates (`PATCH /api/requests/{id}/status`) are not implemented yet and are planned for Day 07.
 - The project is for local/training use only and must not be deployed to a real production environment.
+- Automated tests are planned for Day 08. Manual testing via the Postman collection and the workflow script is the current approach.
+- The `CORS_ORIGIN` variable must match the frontend origin exactly (scheme, hostname, port). Mixing `localhost` and `127.0.0.1` will cause CORS errors.
 
 ## Git Workflow
 
