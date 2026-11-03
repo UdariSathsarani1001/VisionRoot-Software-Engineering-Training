@@ -38,14 +38,14 @@ exports.listRequests = listRequests;
 exports.getRequest = getRequest;
 const app_error_1 = require("../../errors/app-error");
 const repository = __importStar(require("./repository"));
-function createRequest(input) {
+async function createRequest(input) {
     return repository.create(input);
 }
-function listRequests(status) {
+async function listRequests(status) {
     return repository.findAll(status);
 }
-function getRequest(id) {
-    const request = repository.findById(id);
+async function getRequest(id) {
+    const request = await repository.findById(id);
     if (!request) {
         throw new app_error_1.AppError(404, 'NOT_FOUND', 'Request not found');
     }

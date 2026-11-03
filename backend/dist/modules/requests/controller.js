@@ -49,7 +49,7 @@ async function createRequest(req, res, next) {
             }));
             throw new app_error_1.AppError(400, 'VALIDATION_ERROR', 'Invalid input', details);
         }
-        const request = service.createRequest(parsed.data);
+        const request = await service.createRequest(parsed.data);
         res.status(201).json(request);
     }
     catch (err) {
@@ -62,7 +62,7 @@ async function listRequests(req, res, next) {
         if (!parsed.success) {
             throw new app_error_1.AppError(400, 'VALIDATION_ERROR', 'Invalid status filter');
         }
-        const requests = service.listRequests(parsed.data.status);
+        const requests = await service.listRequests(parsed.data.status);
         res.status(200).json(requests);
     }
     catch (err) {
@@ -75,7 +75,7 @@ async function getRequest(req, res, next) {
         if (!parsed.success) {
             throw new app_error_1.AppError(400, 'VALIDATION_ERROR', 'id must be a positive integer');
         }
-        const request = service.getRequest(parsed.data.id);
+        const request = await service.getRequest(parsed.data.id);
         res.status(200).json(request);
     }
     catch (err) {

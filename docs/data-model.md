@@ -28,14 +28,14 @@ erDiagram
 
 | Column | Type | Rules |
 |---|---|---|
-| `id` | integer | Primary key, auto-increment |
-| `title` | varchar(100) | Required. Whitespace trimmed. 3 to 100 characters |
-| `description` | text | Required. 1 to 1000 characters |
+| `id` | integer | Primary key, `GENERATED ALWAYS AS IDENTITY` |
+| `title` | varchar(100) | Required. Whitespace trimmed. 3 to 100 characters (`chk_title_length`) |
+| `description` | text | Required. 1 to 1000 characters (`chk_description_length`) |
 | `category` | enum | Required. `IT`, `Facilities` or `Other` |
 | `priority` | enum | Required. `LOW`, `MEDIUM` or `HIGH` |
 | `status` | enum | Required. `OPEN`, `IN_PROGRESS`, `RESOLVED` or `CLOSED`. Default `OPEN` |
-| `created_at` | timestamptz | Required. Set by the database when the row is created |
-| `updated_at` | timestamptz | Required. Set when the row is created and updated when the status changes |
+| `created_at` | timestamptz | Required. Set by the database when the row is created (`DEFAULT now()`) |
+| `updated_at` | timestamptz | Required. Set on create. Updated when the status changes (`DEFAULT now()`) |
 
 ## 4. Enums
 
@@ -48,11 +48,11 @@ erDiagram
 ## 5. Constraints and indexes
 
 **Constraints**
-- `id` is the primary key.
+- `id` is the primary key (`GENERATED ALWAYS AS IDENTITY`).
 - All columns are `NOT NULL`.
 - Enums make sure only allowed values can be saved.
-- `title` must be 3 to 100 characters after trimming.
-- `description` must be 1 to 1000 characters.
+- `chk_title_length`: `title` must be 3 to 100 characters after trimming (`btrim`).
+- `chk_description_length`: `description` must be 1 to 1000 characters.
 
 **Index**
 - `idx_requests_status` on `status`, because the list is filtered by status (US-02).

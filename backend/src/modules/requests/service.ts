@@ -2,16 +2,18 @@ import { AppError } from '../../errors/app-error';
 import * as repository from './repository';
 import { CreateRequestInput, ServiceRequest, Status } from './types';
 
-export function createRequest(input: CreateRequestInput): ServiceRequest {
+export async function createRequest(
+  input: CreateRequestInput,
+): Promise<ServiceRequest> {
   return repository.create(input);
 }
 
-export function listRequests(status?: Status): ServiceRequest[] {
+export async function listRequests(status?: Status): Promise<ServiceRequest[]> {
   return repository.findAll(status);
 }
 
-export function getRequest(id: number): ServiceRequest {
-  const request = repository.findById(id);
+export async function getRequest(id: number): Promise<ServiceRequest> {
+  const request = await repository.findById(id);
   if (!request) {
     throw new AppError(404, 'NOT_FOUND', 'Request not found');
   }
