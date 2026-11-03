@@ -4,10 +4,10 @@ Next.js 16 · TypeScript · Tailwind CSS · shadcn/ui
 
 ## Routes
 
-| Route | Purpose |
-|---|---|
-| `/` | Request list with status filter (US-02) |
-| `/requests/new` | Create-request form (US-01) |
+| Route            | Purpose                                      |
+| ---------------- | -------------------------------------------- |
+| `/`              | Request list with status filter (US-02)      |
+| `/requests/new`  | Create-request form (US-01)                  |
 | `/requests/[id]` | Request details — read-only (US-03, stretch) |
 
 ## Getting started
@@ -44,14 +44,14 @@ Alternatively, submit a create-request form with a title that **starts with
 
 ## Scripts
 
-| Script | What it does |
-|---|---|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run lint` | ESLint |
-| `npm run format` | Prettier (write) |
-| `npm run format:check` | Prettier (check only) |
-| `npm test` | Placeholder — no tests yet |
+| Script                 | What it does               |
+| ---------------------- | -------------------------- |
+| `npm run dev`          | Start development server   |
+| `npm run build`        | Production build           |
+| `npm run lint`         | ESLint                     |
+| `npm run format`       | Prettier (write)           |
+| `npm run format:check` | Prettier (check only)      |
+| `npm test`             | Placeholder — no tests yet |
 
 ## Project structure
 

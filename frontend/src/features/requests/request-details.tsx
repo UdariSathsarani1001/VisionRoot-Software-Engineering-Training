@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/states/error-state';
 import { StatusBadge } from './status-badge';
 import { PriorityBadge } from './priority-badge';
+import { StatusActions } from './status-actions';
 import { getRequest, ApiError } from '@/lib/api';
 import type { Request } from './types';
 
@@ -87,14 +88,18 @@ export function RequestDetails({ id }: RequestDetailsProps) {
             setNotFoundFlag(true);
           } else {
             setError(
-              err instanceof ApiError ? err.message : 'An unexpected error occurred',
+              err instanceof ApiError
+                ? err.message
+                : 'An unexpected error occurred',
             );
           }
           setLoading(false);
         }
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id, tick]);
 
   if (notFoundFlag) notFound();
@@ -115,7 +120,9 @@ export function RequestDetails({ id }: RequestDetailsProps) {
         <CardHeader className="pb-3">
           {/* Title + badges row */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <CardTitle className="text-xl leading-snug">{request.title}</CardTitle>
+            <CardTitle className="text-xl leading-snug">
+              {request.title}
+            </CardTitle>
             <div className="flex shrink-0 gap-2">
               <StatusBadge status={request.status} />
               <PriorityBadge priority={request.priority} />
@@ -145,11 +152,7 @@ export function RequestDetails({ id }: RequestDetailsProps) {
                   {label}
                 </dt>
                 <dd className={`mt-1 text-sm ${mono ? 'font-mono' : ''}`}>
-                  {datetime ? (
-                    <time dateTime={datetime}>{value}</time>
-                  ) : (
-                    value
-                  )}
+                  {datetime ? <time dateTime={datetime}>{value}</time> : value}
                 </dd>
               </div>
             ))}
@@ -165,6 +168,22 @@ export function RequestDetails({ id }: RequestDetailsProps) {
             <p className="whitespace-pre-wrap text-sm leading-relaxed">
               {request.description}
             </p>
+          </div>
+
+          <hr className="sd-divider" />
+
+          {/* Status actions */}
+          <div>
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide sd-muted">
+              Actions
+            </p>
+            <StatusActions
+              request={request}
+              onUpdated={(updated) => setRequest(updated)}
+            />
+            {request.status === 'CLOSED' && (
+              <p className="text-sm sd-muted">No further actions available.</p>
+            )}
           </div>
         </CardContent>
       </Card>

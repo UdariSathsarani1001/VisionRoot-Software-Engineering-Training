@@ -62,3 +62,17 @@ export const TITLE_MIN = 3;
 export const TITLE_MAX = 100;
 export const DESCRIPTION_MIN = 1;
 export const DESCRIPTION_MAX = 1000;
+
+// --- Status transitions (UI convenience only — the server enforces rules) --
+
+/**
+ * Maps the current status to the one allowed next step, plus the label for
+ * the action button. `null` means no further action is available (CLOSED).
+ */
+export const NEXT_STATUS: Partial<
+  Record<RequestStatus, { status: RequestStatus; label: string }>
+> = {
+  OPEN: { status: 'IN_PROGRESS', label: 'Start progress' },
+  IN_PROGRESS: { status: 'RESOLVED', label: 'Mark resolved' },
+  RESOLVED: { status: 'CLOSED', label: 'Close request' },
+};
