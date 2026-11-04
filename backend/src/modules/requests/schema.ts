@@ -41,5 +41,15 @@ export const requestIdSchema = z.object({
     .max(PG_INT_MAX, 'id must be a valid integer'),
 });
 
+// Body schema for PATCH /api/requests/:id/status
+export const updateStatusSchema = z
+  .object({
+    status: z.enum(STATUSES, {
+      error: `status must be one of: ${STATUSES.join(', ')}`,
+    }),
+  })
+  .strict();
+
 export type CreateRequestInput = z.infer<typeof createRequestSchema>;
 export type ListRequestsQuery = z.infer<typeof listRequestsQuerySchema>;
+export type UpdateStatusInput = z.infer<typeof updateStatusSchema>;

@@ -82,11 +82,21 @@ export function RequestForm() {
       setSubmitted(true);
       setTimeout(() => router.push('/'), 1500);
     } catch (err) {
-      setSubmitError(
-        err instanceof ApiError
-          ? err.message
-          : 'An unexpected error occurred. Please try again.',
-      );
+      if (err instanceof ApiError && err.details && err.details.length > 0) {
+        // Map server-side field errors back to the inline error display
+        setFieldErrors(
+          err.details.map((d) => ({
+            field: d.field as keyof CreateRequestInput,
+            message: d.message,
+          })),
+        );
+      } else {
+        setSubmitError(
+          err instanceof ApiError
+            ? err.message
+            : 'An unexpected error occurred. Please try again.',
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -129,7 +139,10 @@ export function RequestForm() {
       {/* Title */}
       <div className="space-y-1.5">
         <Label htmlFor="title">
-          Title <span aria-hidden="true" className="sd-field-error">*</span>
+          Title{' '}
+          <span aria-hidden="true" className="sd-field-error">
+            *
+          </span>
         </Label>
         <Input
           id="title"
@@ -149,7 +162,11 @@ export function RequestForm() {
           }
         />
         {getFieldError(fieldErrors, 'title') ? (
-          <p id="title-error" role="alert" className="text-sm font-medium sd-field-error">
+          <p
+            id="title-error"
+            role="alert"
+            className="text-sm font-medium sd-field-error"
+          >
             {getFieldError(fieldErrors, 'title')}
           </p>
         ) : (
@@ -162,7 +179,10 @@ export function RequestForm() {
       {/* Description */}
       <div className="space-y-1.5">
         <Label htmlFor="description">
-          Description <span aria-hidden="true" className="sd-field-error">*</span>
+          Description{' '}
+          <span aria-hidden="true" className="sd-field-error">
+            *
+          </span>
         </Label>
         <Textarea
           id="description"
@@ -185,7 +205,11 @@ export function RequestForm() {
           }
         />
         {getFieldError(fieldErrors, 'description') ? (
-          <p id="description-error" role="alert" className="text-sm font-medium sd-field-error">
+          <p
+            id="description-error"
+            role="alert"
+            className="text-sm font-medium sd-field-error"
+          >
             {getFieldError(fieldErrors, 'description')}
           </p>
         ) : (
@@ -200,7 +224,10 @@ export function RequestForm() {
         {/* Category */}
         <div className="space-y-1.5">
           <Label htmlFor="category">
-            Category <span aria-hidden="true" className="sd-field-error">*</span>
+            Category{' '}
+            <span aria-hidden="true" className="sd-field-error">
+              *
+            </span>
           </Label>
           <Select
             value={form.category}
@@ -209,7 +236,9 @@ export function RequestForm() {
             <SelectTrigger
               id="category"
               aria-describedby={
-                getFieldError(fieldErrors, 'category') ? 'category-error' : undefined
+                getFieldError(fieldErrors, 'category')
+                  ? 'category-error'
+                  : undefined
               }
               aria-invalid={!!getFieldError(fieldErrors, 'category')}
               className={
@@ -229,7 +258,11 @@ export function RequestForm() {
             </SelectContent>
           </Select>
           {getFieldError(fieldErrors, 'category') && (
-            <p id="category-error" role="alert" className="text-sm font-medium sd-field-error">
+            <p
+              id="category-error"
+              role="alert"
+              className="text-sm font-medium sd-field-error"
+            >
               {getFieldError(fieldErrors, 'category')}
             </p>
           )}
@@ -238,7 +271,10 @@ export function RequestForm() {
         {/* Priority */}
         <div className="space-y-1.5">
           <Label htmlFor="priority">
-            Priority <span aria-hidden="true" className="sd-field-error">*</span>
+            Priority{' '}
+            <span aria-hidden="true" className="sd-field-error">
+              *
+            </span>
           </Label>
           <Select
             value={form.priority}
@@ -247,7 +283,9 @@ export function RequestForm() {
             <SelectTrigger
               id="priority"
               aria-describedby={
-                getFieldError(fieldErrors, 'priority') ? 'priority-error' : undefined
+                getFieldError(fieldErrors, 'priority')
+                  ? 'priority-error'
+                  : undefined
               }
               aria-invalid={!!getFieldError(fieldErrors, 'priority')}
               className={
@@ -267,7 +305,11 @@ export function RequestForm() {
             </SelectContent>
           </Select>
           {getFieldError(fieldErrors, 'priority') && (
-            <p id="priority-error" role="alert" className="text-sm font-medium sd-field-error">
+            <p
+              id="priority-error"
+              role="alert"
+              className="text-sm font-medium sd-field-error"
+            >
               {getFieldError(fieldErrors, 'priority')}
             </p>
           )}

@@ -21,7 +21,10 @@ const TableHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    className={cn('[&_tr]:border-b [&_tr]:border-[hsl(var(--border))]', className)}
+    className={cn(
+      '[&_tr]:border-b [&_tr]:border-[hsl(var(--border))]',
+      className,
+    )}
     {...props}
   />
 ));
@@ -90,7 +93,10 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn('mt-4 text-sm text-[hsl(var(--muted-foreground))]', className)}
+    className={cn(
+      'mt-4 text-sm text-[hsl(var(--muted-foreground))]',
+      className,
+    )}
     {...props}
   />
 ));

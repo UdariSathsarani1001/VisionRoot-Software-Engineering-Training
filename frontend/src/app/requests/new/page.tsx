@@ -23,9 +23,7 @@ export default function NewRequestPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           New service request
         </h1>
-        <p className="mt-1 text-sm sd-muted">
-          All fields are required.
-        </p>
+        <p className="mt-1 text-sm sd-muted">All fields are required.</p>
       </div>
 
       {/* Form card */}

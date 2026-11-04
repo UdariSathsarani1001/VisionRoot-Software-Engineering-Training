@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { listRequests, ApiError } from '@/lib/api';
+import { listRequests, updateRequestStatus, ApiError } from '@/lib/api';
 import type { Request, RequestStatus } from './types';
 
 interface UseRequestsState {
@@ -52,4 +52,45 @@ export function useRequests(status?: RequestStatus): UseRequestsState {
   }, [status, tick]);
 
   return { requests, loading, error, reload };
+}
+
+// --- Single-request status update hook ------------------------------------
+
+interface UseRequestStatusState {
+  updating: boolean;
+  error: string | null;
+  update: (id: number, newStatus: RequestStatus) => Promise<Request | null>;
+}
+
+/**
+ * Hook that wraps updateRequestStatus from api.ts and manages its loading
+ * and error state. The caller receives the updated request on success, or
+ * null on failure (with error set).
+ */
+export function useRequestStatus(): UseRequestStatusState {
+  const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const update = useCallback(
+    async (id: number, newStatus: RequestStatus): Promise<Request | null> => {
+      setUpdating(true);
+      setError(null);
+      try {
+        const updated = await updateRequestStatus(id, newStatus);
+        return updated;
+      } catch (err) {
+        setError(
+          err instanceof ApiError
+            ? err.message
+            : 'An unexpected error occurred',
+        );
+        return null;
+      } finally {
+        setUpdating(false);
+      }
+    },
+    [],
+  );
+
+  return { updating, error, update };
 }

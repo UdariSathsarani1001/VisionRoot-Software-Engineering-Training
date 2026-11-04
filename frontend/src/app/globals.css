@@ -10,58 +10,58 @@
 ═══════════════════════════════════════════════════════════════════════════ */
 :root {
   /* Surfaces */
-  --background:            0 0% 97%;
-  --foreground:            220 13% 10%;
-  --card:                  0 0% 100%;
-  --card-foreground:       220 13% 10%;
-  --popover:               0 0% 100%;
-  --popover-foreground:    220 13% 10%;
+  --background: 0 0% 97%;
+  --foreground: 220 13% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 13% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 13% 10%;
 
   /* Interactive */
-  --primary:               221 83% 35%;     /* indigo-700 */
-  --primary-foreground:    0 0% 100%;
-  --secondary:             220 13% 93%;
-  --secondary-foreground:  220 13% 20%;
+  --primary: 221 83% 35%; /* indigo-700 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 13% 93%;
+  --secondary-foreground: 220 13% 20%;
 
   /* States */
-  --muted:                 220 13% 93%;
-  --muted-foreground:      220 9% 46%;
-  --accent:                220 13% 90%;
-  --accent-foreground:     220 13% 20%;
-  --destructive:           0 72% 51%;
+  --muted: 220 13% 93%;
+  --muted-foreground: 220 9% 46%;
+  --accent: 220 13% 90%;
+  --accent-foreground: 220 13% 20%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
   /* Structure */
-  --border:                220 13% 88%;
-  --input:                 220 13% 88%;
-  --ring:                  221 83% 53%;
-  --radius:                0.5rem;
+  --border: 220 13% 88%;
+  --input: 220 13% 88%;
+  --ring: 221 83% 53%;
+  --radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background:           224 30% 9%;
-    --foreground:           213 27% 88%;
-    --card:                 224 25% 12%;
-    --card-foreground:      213 27% 88%;
-    --popover:              224 25% 10%;
-    --popover-foreground:   213 27% 88%;
+    --background: 224 30% 9%;
+    --foreground: 213 27% 88%;
+    --card: 224 25% 12%;
+    --card-foreground: 213 27% 88%;
+    --popover: 224 25% 10%;
+    --popover-foreground: 213 27% 88%;
 
-    --primary:              221 83% 60%;
-    --primary-foreground:   0 0% 100%;
-    --secondary:            224 20% 18%;
+    --primary: 221 83% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 224 20% 18%;
     --secondary-foreground: 213 27% 88%;
 
-    --muted:                224 20% 18%;
-    --muted-foreground:     215 16% 55%;
-    --accent:               224 20% 20%;
-    --accent-foreground:    213 27% 88%;
-    --destructive:          0 63% 45%;
+    --muted: 224 20% 18%;
+    --muted-foreground: 215 16% 55%;
+    --accent: 224 20% 20%;
+    --accent-foreground: 213 27% 88%;
+    --destructive: 0 63% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:               224 20% 20%;
-    --input:                224 20% 20%;
-    --ring:                 221 83% 65%;
+    --border: 224 20% 20%;
+    --input: 224 20% 20%;
+    --ring: 221 83% 65%;
   }
 }
 
@@ -85,10 +85,13 @@ html {
 }
 
 @media (prefers-color-scheme: dark) {
-  html { color-scheme: dark; }
+  html {
+    color-scheme: dark;
+  }
 }
 
-html, body {
+html,
+body {
   max-width: 100vw;
   overflow-x: hidden;
 }
@@ -97,7 +100,12 @@ body {
   min-height: 100%;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-geist-sans), system-ui, -apple-system, Arial, sans-serif;
+  font-family:
+    var(--font-geist-sans),
+    system-ui,
+    -apple-system,
+    Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;

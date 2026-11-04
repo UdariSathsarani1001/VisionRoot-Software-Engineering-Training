@@ -1,9 +1,20 @@
 import express from 'express';
+import cors from 'cors';
+import { env } from './config/environment';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import healthRoutes from './modules/health/routes';
 import requestRoutes from './modules/requests/routes';
 
 const app = express();
+
+// CORS — must come before routes so preflight OPTIONS requests are answered.
+app.use(
+  cors({
+    origin: env.corsOrigin,
+    methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
+  }),
+);
 
 // Parse JSON bodies. Malformed JSON produces a SyntaxError caught by errorHandler.
 app.use(express.json());

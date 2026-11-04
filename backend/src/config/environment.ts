@@ -15,4 +15,6 @@ export const env = {
   port: Number(process.env.PORT) || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
   databaseUrl: requireEnv('DATABASE_URL'),
+  // Origin the browser frontend is served from. Required to allow CORS.
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
 };

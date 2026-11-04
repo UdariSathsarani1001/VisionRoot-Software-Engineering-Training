@@ -4,7 +4,8 @@ export const MOCK_REQUESTS: Request[] = [
   {
     id: 1,
     title: 'Laptop will not start',
-    description: 'The laptop shows a black screen after pressing the power button.',
+    description:
+      'The laptop shows a black screen after pressing the power button.',
     category: 'IT',
     priority: 'HIGH',
     status: 'OPEN',
@@ -14,7 +15,8 @@ export const MOCK_REQUESTS: Request[] = [
   {
     id: 2,
     title: 'Office heating not working',
-    description: 'The heating system on the second floor stopped working this morning.',
+    description:
+      'The heating system on the second floor stopped working this morning.',
     category: 'Facilities',
     priority: 'HIGH',
     status: 'IN_PROGRESS',
@@ -24,7 +26,8 @@ export const MOCK_REQUESTS: Request[] = [
   {
     id: 3,
     title: 'Request new monitor',
-    description: 'I need a second monitor for my workstation to improve productivity.',
+    description:
+      'I need a second monitor for my workstation to improve productivity.',
     category: 'IT',
     priority: 'LOW',
     status: 'OPEN',
@@ -34,7 +37,8 @@ export const MOCK_REQUESTS: Request[] = [
   {
     id: 4,
     title: 'Broken desk chair',
-    description: 'The hydraulic mechanism on my chair is broken and it sinks continuously.',
+    description:
+      'The hydraulic mechanism on my chair is broken and it sinks continuously.',
     category: 'Facilities',
     priority: 'MEDIUM',
     status: 'RESOLVED',
@@ -44,7 +48,8 @@ export const MOCK_REQUESTS: Request[] = [
   {
     id: 5,
     title: 'VPN access required',
-    description: 'I need VPN credentials to access the development environment remotely.',
+    description:
+      'I need VPN credentials to access the development environment remotely.',
     category: 'IT',
     priority: 'MEDIUM',
     status: 'CLOSED',
@@ -54,7 +59,8 @@ export const MOCK_REQUESTS: Request[] = [
   {
     id: 6,
     title: 'Parking permit renewal',
-    description: 'My parking permit expires at the end of the month and needs to be renewed.',
+    description:
+      'My parking permit expires at the end of the month and needs to be renewed.',
     category: 'Other',
     priority: 'LOW',
     status: 'OPEN',

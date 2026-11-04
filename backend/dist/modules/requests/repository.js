@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.create = create;
 exports.findAll = findAll;
 exports.findById = findById;
+exports.updateStatus = updateStatus;
 const connection_1 = require("../../database/connection");
 // Map a raw database row to the ServiceRequest shape.
 // The pg driver returns timestamptz as a Date object; convert to ISO 8601.
@@ -37,6 +38,23 @@ async function findAll(status) {
 }
 async function findById(id) {
     const result = await connection_1.pool.query(`SELECT * FROM requests WHERE id = $1`, [id]);
+    if (result.rows.length === 0) {
+        return null;
+    }
+    return rowToRequest(result.rows[0]);
+}
+/**
+ * Atomically update the status, but only when the current status matches
+ * `expectedStatus`. This prevents two concurrent requests from skipping a
+ * transition step.
+ *
+ * Returns the updated row, or null if no row matched (concurrent update).
+ */
+async function updateStatus(id, newStatus, expectedStatus) {
+    const result = await connection_1.pool.query(`UPDATE requests
+     SET status = $2, updated_at = now()
+     WHERE id = $1 AND status = $3
+     RETURNING *`, [id, newStatus, expectedStatus]);
     if (result.rows.length === 0) {
         return null;
     }

@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createRequest = createRequest;
 exports.listRequests = listRequests;
 exports.getRequest = getRequest;
+exports.updateRequestStatus = updateRequestStatus;
 const app_error_1 = require("../../errors/app-error");
 const schema_1 = require("./schema");
 const service = __importStar(require("./service"));
@@ -77,6 +78,29 @@ async function getRequest(req, res, next) {
         }
         const request = await service.getRequest(parsed.data.id);
         res.status(200).json(request);
+    }
+    catch (err) {
+        next(err);
+    }
+}
+async function updateRequestStatus(req, res, next) {
+    try {
+        // Validate the route parameter
+        const idParsed = schema_1.requestIdSchema.safeParse(req.params);
+        if (!idParsed.success) {
+            throw new app_error_1.AppError(400, 'VALIDATION_ERROR', 'id must be a positive integer');
+        }
+        // Validate the request body
+        const bodyParsed = schema_1.updateStatusSchema.safeParse(req.body);
+        if (!bodyParsed.success) {
+            const details = bodyParsed.error.issues.map((e) => ({
+                field: e.path.join('.'),
+                message: e.message,
+            }));
+            throw new app_error_1.AppError(400, 'VALIDATION_ERROR', 'Invalid input', details);
+        }
+        const updated = await service.updateRequestStatus(idParsed.data.id, bodyParsed.data.status);
+        res.status(200).json(updated);
     }
     catch (err) {
         next(err);

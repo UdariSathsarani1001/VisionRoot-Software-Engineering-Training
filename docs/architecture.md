@@ -54,15 +54,35 @@ flowchart LR
 4. The service sets the status to `OPEN`.
 5. The repository saves the request in the database.
 6. The API returns `201 Created` with the new request.
-7. The frontend shows success and refreshes the list (or shows an error if the call fails).
+7. The frontend shows success and redirects to the list (or shows a field error or submit error if the call fails).
 
-## 5. Why this architecture fits
+## 5. Request flow: update a status
+
+1. The user clicks "Start progress" on the details page.
+2. `StatusActions` component calls `useRequestStatus()`, which calls `updateRequestStatus` in `api.ts`.
+3. `api.ts` sends `PATCH /api/requests/{id}/status` with `{ "status": "IN_PROGRESS" }`.
+4. The browser sends a CORS preflight (`OPTIONS`), which the backend answers using the `cors` middleware.
+5. `routes.ts` passes the request to the controller, which validates the id and body with Zod.
+6. The service loads the current request (404 if missing), checks the transition table (`OPEN → IN_PROGRESS` is allowed), and calls the repository.
+7. The repository runs `UPDATE requests SET status = $2, updated_at = now() WHERE id = $1 AND status = $3 RETURNING *` — the `AND status = $3` prevents concurrent requests from skipping a step.
+8. The controller responds `200` with the updated request object.
+9. The UI updates the status badge and metadata from the response. On any failure the error is displayed and the displayed status is unchanged.
+
+## 6. Why this architecture fits
 
 - It is the right size for a small two-week project. Microservices would add network, deployment and monitoring costs the project does not need.
 - Each layer has one job, so the code is easy to read and test.
 - Business rules live in the service, so they can be tested without a database or HTTP.
 
-## 6. Trade-off and risk
+## 7. CORS
+
+The frontend (port 3000) and backend (port 4000) are served from different origins. Without CORS headers the browser blocks every cross-origin request, including the `OPTIONS` preflight the browser sends before a `PATCH`.
+
+The `cors` npm package is registered in `app.ts` **before** any routes. It reads the allowed origin from the `CORS_ORIGIN` environment variable (`http://localhost:3000` by default) and permits `GET`, `POST`, `PATCH` and `OPTIONS`. Wildcards (`*`) are not used.
+
+A Next.js reverse proxy was considered as an alternative (avoids the need for CORS entirely) but was rejected because it hides the real API URL from the developer and makes Postman testing harder to set up.
+
+## 8. Trade-off and risk
 
 **Trade-off:** a single backend is simple to build and debug, but it cannot be scaled or deployed in separate parts. That is acceptable for this scope.
 

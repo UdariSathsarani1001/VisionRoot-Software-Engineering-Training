@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.requestIdSchema = exports.listRequestsQuerySchema = exports.createRequestSchema = void 0;
+exports.updateStatusSchema = exports.requestIdSchema = exports.listRequestsQuerySchema = exports.createRequestSchema = void 0;
 const zod_1 = require("zod");
 const types_1 = require("./types");
 exports.createRequestSchema = zod_1.z
@@ -39,3 +39,11 @@ exports.requestIdSchema = zod_1.z.object({
         .positive('id must be a positive integer')
         .max(PG_INT_MAX, 'id must be a valid integer'),
 });
+// Body schema for PATCH /api/requests/:id/status
+exports.updateStatusSchema = zod_1.z
+    .object({
+    status: zod_1.z.enum(types_1.STATUSES, {
+        error: `status must be one of: ${types_1.STATUSES.join(', ')}`,
+    }),
+})
+    .strict();

@@ -29,7 +29,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
         {/* ── Header ──────────────────────────────────────────────────── */}
         <header className="sd-header sticky top-0 z-30 border-b backdrop-blur-sm">
           <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-            <Link href="/" className="sd-logo-link flex items-center gap-2.5 rounded-sm">
+            <Link
+              href="/"
+              className="sd-logo-link flex items-center gap-2.5 rounded-sm"
+            >
               <span
                 aria-hidden="true"
                 className="sd-logo-mark flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-bold"
@@ -61,8 +64,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <footer className="sd-footer border-t">
           <div className="mx-auto max-w-5xl px-4 py-4 sm:px-6">
             <p className="sd-footer-text text-xs">
-              © {new Date().getFullYear()} ServiceDesk · Running on mock
-              data — no backend connected
+              © {new Date().getFullYear()} ServiceDesk
             </p>
           </div>
         </footer>
