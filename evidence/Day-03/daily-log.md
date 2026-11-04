@@ -44,9 +44,6 @@
 ## Evidence links (screenshots, tests, diagrams)
 
 - README with setup steps: `README.md`
-- Lint, format and build output: `evidence/Day-03/` <!-- add file names -->
-- Repository tree screenshot (if requested): `evidence/Day-03/repo-tree.png`
-- Pull request: _(add link)_
 
 ## Problem encountered
 
