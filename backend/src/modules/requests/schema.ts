@@ -33,13 +33,11 @@ export const listRequestsQuerySchema = z.object({
 // database never receives an out-of-range value that would cause a 500.
 const PG_INT_MAX = 2_147_483_647;
 
-export const requestIdSchema = z.object({
-  id: z.coerce
-    .number()
-    .int('id must be an integer')
-    .positive('id must be a positive integer')
-    .max(PG_INT_MAX, 'id must be a valid integer'),
-});
+export const requestIdSchema = z.coerce
+  .number()
+  .int('id must be an integer')
+  .positive('id must be a positive integer')
+  .max(PG_INT_MAX, 'id must be a valid integer');
 
 // Body schema for PATCH /api/requests/:id/status
 export const updateStatusSchema = z
