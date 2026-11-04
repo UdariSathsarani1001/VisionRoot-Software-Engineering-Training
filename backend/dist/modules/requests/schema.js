@@ -32,13 +32,11 @@ exports.listRequestsQuerySchema = zod_1.z.object({
 // PostgreSQL integer is 32-bit signed. Reject values above the max so the
 // database never receives an out-of-range value that would cause a 500.
 const PG_INT_MAX = 2_147_483_647;
-exports.requestIdSchema = zod_1.z.object({
-    id: zod_1.z.coerce
-        .number()
-        .int('id must be an integer')
-        .positive('id must be a positive integer')
-        .max(PG_INT_MAX, 'id must be a valid integer'),
-});
+exports.requestIdSchema = zod_1.z.coerce
+    .number()
+    .int('id must be an integer')
+    .positive('id must be a positive integer')
+    .max(PG_INT_MAX, 'id must be a valid integer');
 // Body schema for PATCH /api/requests/:id/status
 exports.updateStatusSchema = zod_1.z
     .object({

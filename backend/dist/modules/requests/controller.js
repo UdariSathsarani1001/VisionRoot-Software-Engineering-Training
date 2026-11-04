@@ -72,11 +72,11 @@ async function listRequests(req, res, next) {
 }
 async function getRequest(req, res, next) {
     try {
-        const parsed = schema_1.requestIdSchema.safeParse(req.params);
+        const parsed = schema_1.requestIdSchema.safeParse(req.params.id);
         if (!parsed.success) {
             throw new app_error_1.AppError(400, 'VALIDATION_ERROR', 'id must be a positive integer');
         }
-        const request = await service.getRequest(parsed.data.id);
+        const request = await service.getRequest(parsed.data);
         res.status(200).json(request);
     }
     catch (err) {
@@ -86,7 +86,7 @@ async function getRequest(req, res, next) {
 async function updateRequestStatus(req, res, next) {
     try {
         // Validate the route parameter
-        const idParsed = schema_1.requestIdSchema.safeParse(req.params);
+        const idParsed = schema_1.requestIdSchema.safeParse(req.params.id);
         if (!idParsed.success) {
             throw new app_error_1.AppError(400, 'VALIDATION_ERROR', 'id must be a positive integer');
         }
@@ -99,7 +99,7 @@ async function updateRequestStatus(req, res, next) {
             }));
             throw new app_error_1.AppError(400, 'VALIDATION_ERROR', 'Invalid input', details);
         }
-        const updated = await service.updateRequestStatus(idParsed.data.id, bodyParsed.data.status);
+        const updated = await service.updateRequestStatus(idParsed.data, bodyParsed.data.status);
         res.status(200).json(updated);
     }
     catch (err) {

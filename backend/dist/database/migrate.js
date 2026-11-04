@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.runMigrations = runMigrations;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const pg_1 = require("pg");
@@ -20,8 +21,8 @@ const pg_1 = require("pg");
 require("dotenv/config");
 const environment_1 = require("../config/environment");
 const MIGRATIONS_DIR = path_1.default.resolve(__dirname, '../../../database/migrations');
-async function runMigrations() {
-    const pool = new pg_1.Pool({ connectionString: environment_1.env.databaseUrl });
+async function runMigrations(databaseUrl = environment_1.env.databaseUrl) {
+    const pool = new pg_1.Pool({ connectionString: databaseUrl });
     try {
         // Ensure the tracking table exists.
         await pool.query(`
@@ -63,7 +64,7 @@ async function runMigrations() {
                 await client.query('ROLLBACK');
                 const message = err instanceof Error ? err.message : String(err);
                 console.error(`[migrate] FAILED: ${file} — ${message}`);
-                process.exit(1);
+                throw err;
             }
             finally {
                 client.release();
@@ -80,8 +81,10 @@ async function runMigrations() {
         await pool.end();
     }
 }
-runMigrations().catch((err) => {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error('[migrate] Fatal error:', message);
-    process.exit(1);
-});
+if (require.main === module) {
+    runMigrations().catch((err) => {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error('[migrate] Fatal error:', message);
+        process.exitCode = 1;
+    });
+}
