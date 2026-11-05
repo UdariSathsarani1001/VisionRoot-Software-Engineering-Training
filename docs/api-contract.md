@@ -16,7 +16,7 @@
 
 | Method | Path | Purpose | Success | Errors |
 |---|---|---|---|---|
-| POST | `/api/requests` | Create a request | 201 | 400 |
+| POST | `/api/requests` | Create a request | 201 | 400, 413 |
 | GET | `/api/requests` | List requests (optional status filter) | 200 | 400 |
 | GET | `/api/requests/{id}` | Get one request | 200 | 400, 404 |
 | PATCH | `/api/requests/{id}/status` | Change status | 200 | 400, 404 |
@@ -238,12 +238,26 @@ Every error uses the same structure:
 
 | HTTP status | Code | When |
 |---|---|---|
-| 400 | `VALIDATION_ERROR` | Missing or invalid input |
+| 400 | `VALIDATION_ERROR` | Missing or invalid input, or malformed JSON body |
 | 400 | `INVALID_TRANSITION` | Status change not allowed |
 | 404 | `NOT_FOUND` | Request id does not exist |
+| 413 | `PAYLOAD_TOO_LARGE` | Request body exceeds the 10 kb size limit |
 | 500 | `INTERNAL_ERROR` | Unexpected server error (e.g. database unreachable during a request) |
 
 `details` is optional and only used for field-level validation errors. Error responses never include stack traces, credentials or private data.
+
+### 413 Payload Too Large
+
+When the request body exceeds 10 kb the server responds:
+
+```json
+{
+  "error": {
+    "code": "PAYLOAD_TOO_LARGE",
+    "message": "Request body exceeds the size limit"
+  }
+}
+```
 
 ## 10. Traceability
 
