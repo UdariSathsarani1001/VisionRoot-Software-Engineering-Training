@@ -2,7 +2,7 @@
 
 Training project: **Service Request Management System**, a small internal web application where users can submit and track service requests.
 
-**Status:** Day 08 - Automated backend unit and integration tests added
+**Status:** Day 09 - Security hardening, structured logging, and deployment documentation
 
 **Repository URL:** https://github.com/UdariSathsarani1001/VisionRoot-Software-Engineering-Training
 **Default branch:** `main`
@@ -135,7 +135,28 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 | Database helpers for integration tests | `backend/tests/helpers/db.ts` |
 | Test commands (`npm test`, `npm run test:unit`, `npm run test:integration`) | `backend/package.json` |
 
+## Day 09 Progress
+
+| Item | Location |
+|---|---|
+| Security headers (`helmet`) and body size limit (10 kb) | `backend/src/app.ts` |
+| Startup configuration validation (exits cleanly on missing or invalid variables) | `backend/src/config/environment.ts` |
+| Structured JSON request logging (`pino` + `pino-http`); silent in test mode | `backend/src/middleware/request-logger.ts` |
+| 413 PAYLOAD_TOO_LARGE error handling | `backend/src/middleware/error-handler.ts` |
+| Hardening integration tests (413, security headers, malformed JSON, health shape) | `backend/tests/integration/hardening.test.ts` |
+| Deployment guide | `docs/deployment.md` |
+| Security checklist | `docs/security-checklist.md` |
+| Updated API contract (413 response, error code table) | `docs/api-contract.md` |
+| Updated architecture doc (security and logging section) | `docs/architecture.md` |
+| Updated `.env.example` files with all variables and annotations | `backend/.env.example`, `frontend/.env.example` |
+| Authorization review, decisions, audit findings | `evidence/Day-09/notes.md` |
+| Daily log | `evidence/Day-09/daily-log.md` |
+
 ## Setup Instructions
+
+For a full guide including production-like build, environment variable reference, rollback and troubleshooting, see **[`docs/deployment.md`](docs/deployment.md)**.
+
+For a security review, see **[`docs/security-checklist.md`](docs/security-checklist.md)**.
 
 ### Prerequisites
 
@@ -192,9 +213,10 @@ Requests are saved in PostgreSQL, so they are still there after restarting the b
 | Variable | Meaning |
 |---|---|
 | `PORT` | Port the backend listens on (default 4000) |
-| `NODE_ENV` | Environment name, such as `development` |
+| `NODE_ENV` | Environment name: `development`, `production` or `test`. Validated at startup. |
 | `DATABASE_URL` | PostgreSQL connection string. Set the real value only in your local `.env` and never commit it |
-| `CORS_ORIGIN` | Origin the browser frontend is served from (default `http://localhost:3000`). Must match the frontend URL exactly, including scheme and port |
+| `CORS_ORIGIN` | Origin the browser frontend is served from (default `http://localhost:3000`). Must match the frontend URL exactly, including scheme and port. Required in production and must not be `*`. |
+| `LOG_LEVEL` | Minimum log level (default `info`). Allowed: `trace`, `debug`, `info`, `warn`, `error`, `silent`. |
 
 ### 3. Frontend
 
@@ -220,6 +242,8 @@ The frontend runs on http://localhost:3000. **Start the backend first** — the 
 
 ### 4. Useful commands
 
+**Development:**
+
 Run the development, build, lint and format commands inside `backend/` or `frontend/`. Run the test commands inside `backend/`.
 
 | Command | Purpose |
@@ -232,22 +256,44 @@ Run the development, build, lint and format commands inside `backend/` or `front
 | `npm run test:unit` | Run backend unit tests |
 | `npm run test:integration` | Run backend integration tests |
 
+**Production-like build and run (backend):**
+
+```bash
+cd backend
+npm ci
+npm run build
+# Git Bash / macOS / Linux
+NODE_ENV=production npm start
+# PowerShell
+$env:NODE_ENV = "production"; npm start
+```
+
+**Production-like build and run (frontend):**
+
+```bash
+cd frontend
+npm ci
+# Set NEXT_PUBLIC_API_URL in frontend/.env.local before building
+npm run build
+npm start
+```
+
+Verify the backend is healthy: `curl http://localhost:4000/api/health` should return `{"status":"ok"}`.
+
 Backend tests require PostgreSQL and a separate test database. Set `TEST_DATABASE_URL` in `backend/.env` to the test database connection string. Its database name must contain `test`, and it must not be the same as `DATABASE_URL`. Integration tests run migrations and clear request records in that test database; never point `TEST_DATABASE_URL` at a development or production database.
 
 ### Test results
 
-Last run (Day 08), inside `backend/`:
+Last run (Day 09), inside `backend/`:
 
 | Command | Result |
 |---|---|
 | `npm run test:unit` | 2 test files, 60 tests passed |
-| `npm run test:integration` | 2 test files, 41 tests passed |
-| `npm test` | 4 test files, 101 tests passed, 4.96 seconds |
+| `npm run test:integration` | 3 test files, 54 tests passed |
+| `npm test` | 5 test files, 114 tests passed |
 | `npm run lint` | passes |
 | `npm run format` | passes |
 | `npm run build` | passes |
-
-Screenshots of these runs are in `evidence/Day-08/`.
 
 ### 5. Database
 
@@ -339,7 +385,8 @@ VisionRoot-Software-Engineering-Training/
 │   │   │       ├── schema.ts
 │   │   │       └── types.ts
 │   │   ├── middleware/
-│   │   │   └── error-handler.ts
+│   │   │   ├── error-handler.ts
+│   │   │   └── request-logger.ts
 │   │   ├── database/
 │   │   │   ├── connection.ts
 │   │   │   └── migrate.ts
@@ -357,6 +404,7 @@ VisionRoot-Software-Engineering-Training/
 │       ├── helpers/
 │       │   └── db.ts
 │       ├── integration/
+│       │   ├── hardening.test.ts
 │       │   ├── health.test.ts
 │       │   └── requests.test.ts
 │       └── unit/
@@ -383,6 +431,8 @@ VisionRoot-Software-Engineering-Training/
 │   ├── architecture.md
 │   ├── data-model.md
 │   ├── api-contract.md
+│   ├── deployment.md
+│   ├── security-checklist.md
 │   ├── decisions/
 │   │   └── ADR-001-architecture.md
 │   └── postman/
@@ -427,22 +477,34 @@ VisionRoot-Software-Engineering-Training/
     │   ├── workflow-script-output.png
     │   ├── postman-runner.png
     │   └── workflow-test.mjs
-    └── Day-08/
+    ├── Day-08/
+    │   ├── notes.md
+    │   ├── daily-log.md
+    │   ├── bug-log.md
+    │   ├── unit-tests-pass.png
+    │   ├── integration-tests-pass.png
+    │   ├── lint-format-build.png
+    │   └── full-suite-pass.png
+    └── Day-09/
         ├── notes.md
         ├── daily-log.md
-        ├── bug-log.md
-        ├── unit-tests-pass.png
-        ├── integration-tests-pass.png
-        ├── lint-format-build.png
+        ├── backend-production-build.png
+        ├── backend-health-check.png
+        ├── backend-health-failed.png
+        ├── backend-log.png
+        ├── frontend-production-build.png
         └── full-suite-pass.png
 ```
 
 ## Known Limitations
 
-- The MVP has no authentication or authorisation. All users can perform all actions.
-- The project is for local/training use only and must not be deployed to a real production environment.
+- The MVP has no authentication or authorisation. All users can perform all actions. Hidden UI buttons and CORS are not authorization controls — authentication is planned as future work (F-01).
+- The project is for local/training use only and must not be deployed to a real production environment without supervisor authorisation.
+- HTTP only when run locally. HTTPS is the responsibility of a reverse proxy or hosting platform in a real deployment.
+- No rate limiting on any endpoint.
 - Automated backend tests require a separately configured PostgreSQL test database.
 - The `CORS_ORIGIN` variable must match the frontend origin exactly (scheme, hostname, port). Mixing `localhost` and `127.0.0.1` will cause CORS errors.
+- See `docs/security-checklist.md` for the full list of known security limitations.
 
 ## Git Workflow
 
