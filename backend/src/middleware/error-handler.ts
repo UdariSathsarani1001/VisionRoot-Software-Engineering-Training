@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../errors/app-error';
+import { logger } from './request-logger';
 
 function buildErrorBody(
   code: string,
@@ -40,6 +41,24 @@ export function errorHandler(
     return;
   }
 
+  // Express body-parser: oversized body raises an error with status 413.
+  if (
+    typeof err === 'object' &&
+    err !== null &&
+    'status' in err &&
+    (err as { status: number }).status === 413
+  ) {
+    res
+      .status(413)
+      .json(
+        buildErrorBody(
+          'PAYLOAD_TOO_LARGE',
+          'Request body exceeds the size limit',
+        ),
+      );
+    return;
+  }
+
   // Malformed JSON from Express body-parser lands here as a SyntaxError.
   if (err instanceof SyntaxError && 'body' in err) {
     res
@@ -48,11 +67,12 @@ export function errorHandler(
     return;
   }
 
-  // Unexpected error — log safely, return nothing internal.
-  console.error(
-    '[error]',
-    err instanceof Error ? err.message : 'Unknown error',
-  );
+  // Unexpected error — log safely (type only, no values), return nothing internal.
+  const errorType = err instanceof Error ? err.constructor.name : typeof err;
+  const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+
+  logger.error({ type: errorType }, `Unexpected error: ${errorMessage}`);
+
   res
     .status(500)
     .json(buildErrorBody('INTERNAL_ERROR', 'An unexpected error occurred'));
