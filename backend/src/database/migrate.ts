@@ -19,8 +19,10 @@ import { env } from '../config/environment';
 
 const MIGRATIONS_DIR = path.resolve(__dirname, '../../../database/migrations');
 
-async function runMigrations(): Promise<void> {
-  const pool = new Pool({ connectionString: env.databaseUrl });
+export async function runMigrations(
+  databaseUrl: string = env.databaseUrl,
+): Promise<void> {
+  const pool = new Pool({ connectionString: databaseUrl });
 
   try {
     // Ensure the tracking table exists.
@@ -74,7 +76,7 @@ async function runMigrations(): Promise<void> {
         await client.query('ROLLBACK');
         const message = err instanceof Error ? err.message : String(err);
         console.error(`[migrate] FAILED: ${file} — ${message}`);
-        process.exit(1);
+        throw err;
       } finally {
         client.release();
       }
@@ -90,8 +92,10 @@ async function runMigrations(): Promise<void> {
   }
 }
 
-runMigrations().catch((err) => {
-  const message = err instanceof Error ? err.message : String(err);
-  console.error('[migrate] Fatal error:', message);
-  process.exit(1);
-});
+if (require.main === module) {
+  runMigrations().catch((err) => {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[migrate] Fatal error:', message);
+    process.exitCode = 1;
+  });
+}

@@ -2,7 +2,7 @@
 
 Training project: **Service Request Management System**, a small internal web application where users can submit and track service requests.
 
-**Status:** Day 07 - Full integration (frontend connected to live API; status-update workflow implemented)
+**Status:** Day 08 - Automated backend unit and integration tests added
 
 **Repository URL:** https://github.com/UdariSathsarani1001/VisionRoot-Software-Engineering-Training
 **Default branch:** `main`
@@ -125,6 +125,16 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 | Design decisions and integration bug record | `evidence/Day-07/notes.md` |
 | Daily log | `evidence/Day-07/daily-log.md` |
 
+## Day 08 Progress
+
+| Item | Location |
+|---|---|
+| Vitest configuration and test setup | `backend/vitest.config.ts`, `backend/tests/setup.ts` |
+| Unit tests for request validation schemas and service behavior | `backend/tests/unit/` |
+| Integration tests for the health endpoint and request API, including status transitions | `backend/tests/integration/` |
+| Database helpers for integration tests | `backend/tests/helpers/db.ts` |
+| Test commands (`npm test`, `npm run test:unit`, `npm run test:integration`) | `backend/package.json` |
+
 ## Setup Instructions
 
 ### Prerequisites
@@ -210,7 +220,7 @@ The frontend runs on http://localhost:3000. **Start the backend first** — the 
 
 ### 4. Useful commands
 
-Run these inside `backend/` or `frontend/`:
+Run the development, build, lint and format commands inside `backend/` or `frontend/`. Run the test commands inside `backend/`.
 
 | Command | Purpose |
 |---|---|
@@ -218,7 +228,26 @@ Run these inside `backend/` or `frontend/`:
 | `npm run build` | Build for production |
 | `npm run lint` | Check code with ESLint |
 | `npm run format` | Format code with Prettier |
-| `npm test` | Placeholder until tests are added on Day 08 |
+| `npm test` | Run all backend unit and integration tests |
+| `npm run test:unit` | Run backend unit tests |
+| `npm run test:integration` | Run backend integration tests |
+
+Backend tests require PostgreSQL and a separate test database. Set `TEST_DATABASE_URL` in `backend/.env` to the test database connection string. Its database name must contain `test`, and it must not be the same as `DATABASE_URL`. Integration tests run migrations and clear request records in that test database; never point `TEST_DATABASE_URL` at a development or production database.
+
+### Test results
+
+Last run (Day 08), inside `backend/`:
+
+| Command | Result |
+|---|---|
+| `npm run test:unit` | 2 test files, 60 tests passed |
+| `npm run test:integration` | 2 test files, 41 tests passed |
+| `npm test` | 4 test files, 101 tests passed, 4.96 seconds |
+| `npm run lint` | passes |
+| `npm run format` | passes |
+| `npm run build` | passes |
+
+Screenshots of these runs are in `evidence/Day-08/`.
 
 ### 5. Database
 
@@ -256,6 +285,43 @@ This applies the SQL files in `database/migrations/` in order and records each o
 
 **Health check:** `GET /api/health` returns 200 when the database is reachable and 503 when it is not.
 
+## 6. Testing
+
+Backend tests use **Vitest** and **supertest**. They need a **separate** PostgreSQL test database because the integration tests clear request records.
+
+**1. Create the test database** in pgAdmin 4 (Query Tool), using the role created in the database setup above:
+
+```sql
+CREATE DATABASE service_requests_test OWNER srm_user;
+```
+
+**2. Apply the migration.** The request API integration suite applies the migrations automatically before its tests; no manual migration is needed for the test database.
+
+**3. Set `TEST_DATABASE_URL`** in `backend/.env` (never commit this file) to the PostgreSQL connection URI for the test database:
+
+```
+TEST_DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/service_requests_test
+```
+
+**4. Run the tests** from `backend/`:
+
+```bash
+npm test
+```
+
+**Safety rules.** Test setup refuses to run if `TEST_DATABASE_URL` is missing, exactly matches `DATABASE_URL`, or has a database name that does not contain `test`. Always use the separate test database; never point `TEST_DATABASE_URL` at a development or production database.
+
+**What is tested**
+
+| Type | Location | Covers |
+|---|---|---|
+| Unit | `backend/tests/unit/schema.test.ts` | Validation boundaries: title (3 to 100 characters), description (1 to 1000), category, priority, status, and ID range |
+| Unit | `backend/tests/unit/service.test.ts` | All 16 status transitions, not-found behavior, and mocked repository interactions |
+| Integration | `backend/tests/integration/requests.test.ts` | Create, list, filter, get, PATCH, validation errors, and safe error responses through the API and database |
+| Integration | `backend/tests/integration/health.test.ts` | Health check and unknown routes |
+
+**How the tests stay reliable:** the request API integration suite resets the `requests` table before each test, Vitest runs test files sequentially, and unit tests use a mocked repository.
+
 ## Repository Structure
 
 ```
@@ -284,7 +350,18 @@ VisionRoot-Software-Engineering-Training/
 │   ├── .env.example
 │   ├── eslint.config.mjs
 │   ├── package.json
-│   └── tsconfig.json
+│   ├── tsconfig.json
+│   ├── vitest.config.ts
+│   └── tests/
+│       ├── setup.ts
+│       ├── helpers/
+│       │   └── db.ts
+│       ├── integration/
+│       │   ├── health.test.ts
+│       │   └── requests.test.ts
+│       └── unit/
+│           ├── schema.test.ts
+│           └── service.test.ts
 ├── frontend/
 │   ├── src/
 │   │   ├── app/
@@ -338,27 +415,33 @@ VisionRoot-Software-Engineering-Training/
     ├── Day-06/
     │   ├── notes.md
     │   └── daily-log.md
-    └── Day-07/
+    ├── Day-07/
+    │   ├── notes.md
+    │   ├── daily-log.md
+    │   ├── create-form.png
+    │   ├── service-list.png
+    │   ├── details-open.png
+    │   ├── status-in-progress.png
+    │   ├── status-resolved.png
+    │   ├── status-closed.png
+    │   ├── workflow-script-output.png
+    │   ├── postman-runner.png
+    │   └── workflow-test.mjs
+    └── Day-08/
         ├── notes.md
         ├── daily-log.md
-        ├── create-form.png
-        ├── service-list.png
-        ├── details-open.png
-        ├── status-in-progress.png
-        ├── status-resolved.png
-        ├── status-closed.png
-        ├── workflow-script-output.png
-        ├── postman-runner.png
-        └── workflow-test.mjs
+        ├── bug-log.md
+        ├── unit-tests-pass.png
+        ├── integration-tests-pass.png
+        ├── lint-format-build.png
+        └── full-suite-pass.png
 ```
-
-More folders (`tests/`) will be added on the days they are needed.
 
 ## Known Limitations
 
 - The MVP has no authentication or authorisation. All users can perform all actions.
 - The project is for local/training use only and must not be deployed to a real production environment.
-- Automated tests are planned for Day 08. Manual testing via the Postman collection and the workflow script is the current approach.
+- Automated backend tests require a separately configured PostgreSQL test database.
 - The `CORS_ORIGIN` variable must match the frontend origin exactly (scheme, hostname, port). Mixing `localhost` and `127.0.0.1` will cause CORS errors.
 
 ## Git Workflow

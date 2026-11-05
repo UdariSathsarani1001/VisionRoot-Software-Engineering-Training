@@ -57,7 +57,7 @@ export async function getRequest(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const parsed = requestIdSchema.safeParse(req.params);
+    const parsed = requestIdSchema.safeParse(req.params.id);
     if (!parsed.success) {
       throw new AppError(
         400,
@@ -66,7 +66,7 @@ export async function getRequest(
       );
     }
 
-    const request = await service.getRequest(parsed.data.id);
+    const request = await service.getRequest(parsed.data);
     res.status(200).json(request);
   } catch (err) {
     next(err);
@@ -80,7 +80,7 @@ export async function updateRequestStatus(
 ): Promise<void> {
   try {
     // Validate the route parameter
-    const idParsed = requestIdSchema.safeParse(req.params);
+    const idParsed = requestIdSchema.safeParse(req.params.id);
     if (!idParsed.success) {
       throw new AppError(
         400,
@@ -100,7 +100,7 @@ export async function updateRequestStatus(
     }
 
     const updated = await service.updateRequestStatus(
-      idParsed.data.id,
+      idParsed.data,
       bodyParsed.data.status as Status,
     );
     res.status(200).json(updated);

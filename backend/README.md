@@ -85,15 +85,22 @@ curl http://localhost:4000/api/requests/1
 
 ## Scripts
 
-| Script                 | Purpose                           |
-| ---------------------- | --------------------------------- |
-| `npm run dev`          | Start with hot-reload             |
-| `npm run build`        | Compile TypeScript                |
-| `npm start`            | Run compiled build                |
-| `npm run migrate`      | Apply pending database migrations |
-| `npm run lint`         | Run ESLint                        |
-| `npm run format`       | Run Prettier (write)              |
-| `npm run format:check` | Run Prettier (check only)         |
+| Script                     | Purpose                           |
+| -------------------------- | --------------------------------- |
+| `npm run dev`              | Start with hot-reload             |
+| `npm run build`            | Compile TypeScript                |
+| `npm start`                | Run compiled build                |
+| `npm run migrate`          | Apply pending database migrations |
+| `npm run lint`             | Run ESLint                        |
+| `npm run format`           | Run Prettier (write)              |
+| `npm run format:check`     | Run Prettier (check only)         |
+| `npm run test:unit`        | Run unit tests                    |
+| `npm run test:integration` | Run integration tests             |
+
+Integration tests require `TEST_DATABASE_URL` in `.env`, pointing to a dedicated
+database whose name contains `test` and differs from `DATABASE_URL`. The request
+integration tests apply pending migrations and truncate test data before each case.
+Never point `TEST_DATABASE_URL` at a development or production database.
 
 ## Progress
 
