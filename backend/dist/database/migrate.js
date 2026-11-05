@@ -8,6 +8,7 @@
  * - Creates schema_migrations if it does not exist.
  * - Applies each unapplied file inside a transaction.
  * - Running it twice is safe: the second run applies nothing.
+ * - Logs which files ran; never logs the connection string or any credential.
  */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -20,6 +21,7 @@ const pg_1 = require("pg");
 // Load .env before importing env config so DATABASE_URL is available.
 require("dotenv/config");
 const environment_1 = require("../config/environment");
+const request_logger_1 = require("../middleware/request-logger");
 const MIGRATIONS_DIR = path_1.default.resolve(__dirname, '../../../database/migrations');
 async function runMigrations(databaseUrl = environment_1.env.databaseUrl) {
     const pool = new pg_1.Pool({ connectionString: databaseUrl });
@@ -37,7 +39,7 @@ async function runMigrations(databaseUrl = environment_1.env.databaseUrl) {
             .filter((f) => f.endsWith('.sql'))
             .sort();
         if (files.length === 0) {
-            console.log('[migrate] No migration files found.');
+            request_logger_1.logger.info('[migrate] No migration files found.');
             return;
         }
         // Fetch already-applied migrations.
@@ -46,7 +48,7 @@ async function runMigrations(databaseUrl = environment_1.env.databaseUrl) {
         let newCount = 0;
         for (const file of files) {
             if (applied.has(file)) {
-                console.log(`[migrate] Skipping (already applied): ${file}`);
+                request_logger_1.logger.info(`[migrate] Skipping (already applied): ${file}`);
                 continue;
             }
             const filePath = path_1.default.join(MIGRATIONS_DIR, file);
@@ -57,13 +59,14 @@ async function runMigrations(databaseUrl = environment_1.env.databaseUrl) {
                 await client.query(sql);
                 await client.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [file]);
                 await client.query('COMMIT');
-                console.log(`[migrate] Applied: ${file}`);
+                request_logger_1.logger.info(`[migrate] Applied: ${file}`);
                 newCount++;
             }
             catch (err) {
                 await client.query('ROLLBACK');
                 const message = err instanceof Error ? err.message : String(err);
-                console.error(`[migrate] FAILED: ${file} — ${message}`);
+                // Log only the error message and filename — never the connection string.
+                request_logger_1.logger.error(`[migrate] FAILED: ${file} — ${message}`);
                 throw err;
             }
             finally {
@@ -71,10 +74,10 @@ async function runMigrations(databaseUrl = environment_1.env.databaseUrl) {
             }
         }
         if (newCount === 0) {
-            console.log('[migrate] Nothing to apply. Database is up to date.');
+            request_logger_1.logger.info('[migrate] Nothing to apply. Database is up to date.');
         }
         else {
-            console.log(`[migrate] Done. Applied ${newCount} migration(s).`);
+            request_logger_1.logger.info(`[migrate] Done. Applied ${newCount} migration(s).`);
         }
     }
     finally {
@@ -84,7 +87,8 @@ async function runMigrations(databaseUrl = environment_1.env.databaseUrl) {
 if (require.main === module) {
     runMigrations().catch((err) => {
         const message = err instanceof Error ? err.message : String(err);
-        console.error('[migrate] Fatal error:', message);
+        // Log only the error message — never connection details.
+        request_logger_1.logger.error(`[migrate] Fatal error: ${message}`);
         process.exitCode = 1;
     });
 }
