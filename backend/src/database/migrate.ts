@@ -7,6 +7,7 @@
  * - Creates schema_migrations if it does not exist.
  * - Applies each unapplied file inside a transaction.
  * - Running it twice is safe: the second run applies nothing.
+ * - Logs which files ran; never logs the connection string or any credential.
  */
 
 import fs from 'fs';
@@ -16,6 +17,7 @@ import { Pool } from 'pg';
 // Load .env before importing env config so DATABASE_URL is available.
 import 'dotenv/config';
 import { env } from '../config/environment';
+import { logger } from '../middleware/request-logger';
 
 const MIGRATIONS_DIR = path.resolve(__dirname, '../../../database/migrations');
 
@@ -40,7 +42,7 @@ export async function runMigrations(
       .sort();
 
     if (files.length === 0) {
-      console.log('[migrate] No migration files found.');
+      logger.info('[migrate] No migration files found.');
       return;
     }
 
@@ -54,7 +56,7 @@ export async function runMigrations(
 
     for (const file of files) {
       if (applied.has(file)) {
-        console.log(`[migrate] Skipping (already applied): ${file}`);
+        logger.info(`[migrate] Skipping (already applied): ${file}`);
         continue;
       }
 
@@ -70,12 +72,13 @@ export async function runMigrations(
           [file],
         );
         await client.query('COMMIT');
-        console.log(`[migrate] Applied: ${file}`);
+        logger.info(`[migrate] Applied: ${file}`);
         newCount++;
       } catch (err) {
         await client.query('ROLLBACK');
         const message = err instanceof Error ? err.message : String(err);
-        console.error(`[migrate] FAILED: ${file} — ${message}`);
+        // Log only the error message and filename — never the connection string.
+        logger.error(`[migrate] FAILED: ${file} — ${message}`);
         throw err;
       } finally {
         client.release();
@@ -83,9 +86,9 @@ export async function runMigrations(
     }
 
     if (newCount === 0) {
-      console.log('[migrate] Nothing to apply. Database is up to date.');
+      logger.info('[migrate] Nothing to apply. Database is up to date.');
     } else {
-      console.log(`[migrate] Done. Applied ${newCount} migration(s).`);
+      logger.info(`[migrate] Done. Applied ${newCount} migration(s).`);
     }
   } finally {
     await pool.end();
@@ -95,7 +98,8 @@ export async function runMigrations(
 if (require.main === module) {
   runMigrations().catch((err) => {
     const message = err instanceof Error ? err.message : String(err);
-    console.error('[migrate] Fatal error:', message);
+    // Log only the error message — never connection details.
+    logger.error(`[migrate] Fatal error: ${message}`);
     process.exitCode = 1;
   });
 }
