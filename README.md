@@ -2,10 +2,12 @@
 
 Training project: **Service Request Management System**, a small internal web application where users can submit and track service requests.
 
-**Status:** Day 09 - Security hardening, structured logging, and deployment documentation
+**Status:** Day 10 - Final review, demo preparation, and handover
 
 **Repository URL:** https://github.com/UdariSathsarani1001/VisionRoot-Software-Engineering-Training
 **Default branch:** `main`
+**Final version tag:** `v1.0.0-training`
+**Reviewed commit:** `fb0373a`
 
 ---
 
@@ -151,6 +153,19 @@ Internal service requests (IT issues, facility repairs, general needs) are often
 | Updated `.env.example` files with all variables and annotations | `backend/.env.example`, `frontend/.env.example` |
 | Authorization review, decisions, audit findings | `evidence/Day-09/notes.md` |
 | Daily log | `evidence/Day-09/daily-log.md` |
+
+## Day 10 Progress
+
+| Item | Location |
+|---|---|
+| Final review findings, decisions and triage | `evidence/Day-10/notes.md` |
+| Demo run sheet and talk track | `evidence/Day-10/demo-notes.md` |
+| Self-review and known limitations | `evidence/Day-10/self-review.md` |
+| Final validation results | `evidence/Day-10/test-results.md` |
+| Release notes | `docs/release-notes.md` |
+| Handover summary | `docs/handover.md` |
+| Final version tag and reviewed commit | `git tag v1.0.0-training`, `git rev-parse --short HEAD` |
+| Daily log | `evidence/Day-10/daily-log.md` |
 
 ## Setup Instructions
 
@@ -433,6 +448,8 @@ VisionRoot-Software-Engineering-Training/
 │   ├── api-contract.md
 │   ├── deployment.md
 │   ├── security-checklist.md
+│   ├── release-notes.md
+│   ├── handover.md
 │   ├── decisions/
 │   │   └── ADR-001-architecture.md
 │   └── postman/
@@ -485,15 +502,21 @@ VisionRoot-Software-Engineering-Training/
     │   ├── integration-tests-pass.png
     │   ├── lint-format-build.png
     │   └── full-suite-pass.png
-    └── Day-09/
+    ├── Day-09/
+    │   ├── notes.md
+    │   ├── daily-log.md
+    │   ├── backend-production-build.png
+    │   ├── backend-health-check.png
+    │   ├── backend-health-failed.png
+    │   ├── backend-log.png
+    │   ├── frontend-production-build.png
+    │   └── full-suite-pass.png
+    └── Day-10/
         ├── notes.md
-        ├── daily-log.md
-        ├── backend-production-build.png
-        ├── backend-health-check.png
-        ├── backend-health-failed.png
-        ├── backend-log.png
-        ├── frontend-production-build.png
-        └── full-suite-pass.png
+        ├── demo-notes.md
+        ├── self-review.md
+        ├── test-results.md
+        └── daily-log.md
 ```
 
 ## Known Limitations
