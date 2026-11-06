@@ -1,12 +1,17 @@
 import { Pool } from 'pg';
 import { env } from '../config/environment';
+import { logger } from '../middleware/request-logger';
 
 // One shared pool for the entire application.
 export const pool = new Pool({ connectionString: env.databaseUrl });
 
 // Log idle-client errors so a background failure does not crash the process.
+// Never log the connection string or any credential.
 pool.on('error', (err) => {
-  console.error('[database] Unexpected idle client error:', err.message);
+  logger.error(
+    { type: err.constructor.name },
+    `[database] Unexpected idle client error: ${err.message}`,
+  );
 });
 
 /**

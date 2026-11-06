@@ -4,6 +4,7 @@ exports.errorHandler = errorHandler;
 exports.notFoundHandler = notFoundHandler;
 const zod_1 = require("zod");
 const app_error_1 = require("../errors/app-error");
+const request_logger_1 = require("./request-logger");
 function buildErrorBody(code, message, details) {
     const body = { code, message };
     if (details && details.length > 0) {
@@ -31,6 +32,16 @@ _next) {
             .json(buildErrorBody('VALIDATION_ERROR', 'Invalid input', details));
         return;
     }
+    // Express body-parser: oversized body raises an error with status 413.
+    if (typeof err === 'object' &&
+        err !== null &&
+        'status' in err &&
+        err.status === 413) {
+        res
+            .status(413)
+            .json(buildErrorBody('PAYLOAD_TOO_LARGE', 'Request body exceeds the size limit'));
+        return;
+    }
     // Malformed JSON from Express body-parser lands here as a SyntaxError.
     if (err instanceof SyntaxError && 'body' in err) {
         res
@@ -38,8 +49,10 @@ _next) {
             .json(buildErrorBody('VALIDATION_ERROR', 'Malformed JSON body'));
         return;
     }
-    // Unexpected error — log safely, return nothing internal.
-    console.error('[error]', err instanceof Error ? err.message : 'Unknown error');
+    // Unexpected error — log safely (type only, no values), return nothing internal.
+    const errorType = err instanceof Error ? err.constructor.name : typeof err;
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    request_logger_1.logger.error({ type: errorType }, `Unexpected error: ${errorMessage}`);
     res
         .status(500)
         .json(buildErrorBody('INTERNAL_ERROR', 'An unexpected error occurred'));

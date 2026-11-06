@@ -87,3 +87,25 @@ A Next.js reverse proxy was considered as an alternative (avoids the need for CO
 **Trade-off:** a single backend is simple to build and debug, but it cannot be scaled or deployed in separate parts. That is acceptable for this scope.
 
 **Known risk:** the MVP has no authentication, so anyone who can open the app can change any request. It is for local/training use only, and authentication is planned as future work (F-01).
+
+## 9. Security and cross-cutting concerns (Day 09)
+
+### Security headers
+
+`helmet` is registered as the first middleware in `app.ts` before CORS and routes. It sets `X-Content-Type-Options: nosniff`, removes `X-Powered-By`, and applies a set of other safe default headers. No Content-Security-Policy customisation is needed because the backend returns only JSON.
+
+### Body size limit
+
+`express.json({ limit: '10kb' })` caps incoming JSON bodies. A body larger than 10 kb raises a 413 error handled by `errorHandler`, which returns `{ error: { code: "PAYLOAD_TOO_LARGE", ... } }` with no internal details.
+
+### Structured request logging
+
+`pino` and `pino-http` produce one JSON line per request containing method, URL, status code and response time. Rules enforced in `request-logger.ts`:
+- Request bodies, `Authorization` headers, cookies, and the connection string are never logged.
+- Log level is read from `LOG_LEVEL` (default `info`).
+- All output is suppressed (`silent`) when `NODE_ENV=test` so test output stays readable.
+- Unexpected errors are logged with error type and message only — no stack traces or internal paths reach the response.
+
+### Startup configuration validation
+
+`config/environment.ts` validates every required variable at startup and calls `process.exit(1)` with a descriptive message if a variable is missing or invalid. The message names the variable but never prints its value. `TEST_DATABASE_URL` is only checked by the test setup, not by the application itself.

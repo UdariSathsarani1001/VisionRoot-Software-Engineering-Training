@@ -1,5 +1,9 @@
 export type ErrorCode =
-  'VALIDATION_ERROR' | 'NOT_FOUND' | 'INTERNAL_ERROR' | 'INVALID_TRANSITION';
+  | 'VALIDATION_ERROR'
+  | 'NOT_FOUND'
+  | 'INTERNAL_ERROR'
+  | 'INVALID_TRANSITION'
+  | 'PAYLOAD_TOO_LARGE';
 
 export interface ErrorDetail {
   field: string;
